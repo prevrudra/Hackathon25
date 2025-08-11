@@ -1,0 +1,235 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth, type UserRole } from "@/lib/auth-context"
+import Link from "next/link"
+
+export function SignupForm() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+    role: "" as UserRole | "",
+  })
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+  const { signup, isLoading } = useAuth()
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setSuccess("")
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    // Validate password strength
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      return
+    }
+
+    if (!/[A-Z]/.test(formData.password)) {
+      setError("Password must contain at least one uppercase letter")
+      return
+    }
+
+    if (!/[a-z]/.test(formData.password)) {
+      setError("Password must contain at least one lowercase letter")
+      return
+    }
+
+    if (!/\d/.test(formData.password)) {
+      setError("Password must contain at least one number")
+      return
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
+      setError("Password must contain at least one special character (!@#$%^&*)")
+      return
+    }
+
+    if (!formData.role) {
+      setError("Please select a role")
+      return
+    }
+
+    const result = await signup({
+      email: formData.email,
+      password: formData.password,
+      fullName: formData.fullName,
+      role: formData.role as UserRole,
+    })
+
+    if (result.success) {
+      setSuccess(result.message)
+      setTimeout(() => {
+        router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
+      }, 2000)
+    } else {
+      setError(result.message)
+    }
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 shadow my-0 px-4 rounded-4xl border-2">
+      <Card className="w-full max-w-md shadow-lg border-0">
+        <CardHeader className="text-center space-y-2 pb-6">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <span className="text-2xl font-bold text-white">Q</span>
+          </div>
+          <CardTitle className="text-3xl font-bold text-gray-900">Join QuickCourt</CardTitle>
+          <CardDescription className="text-gray-600 text-base">
+            Create your account to start booking sports facilities
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 border-0 px-24">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-sm font-semibold text-gray-700">
+                Full Name
+              </Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange("fullName", e.target.value)}
+                className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-semibold text-gray-700">
+                I am a
+              </Label>
+              <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)}>
+                <SelectTrigger className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">🏃‍♂️ Sports Player</SelectItem>
+                  <SelectItem value="facility_owner">🏢 Facility Owner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={(e) => handleInputChange("password", e.target.value)}
+                className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                required
+              />
+              {formData.password && (
+                <div className="text-xs text-muted-foreground">
+                  Password requirements:
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li className={formData.password.length >= 8 ? "text-green-600" : "text-red-500"}>
+                      At least 8 characters
+                    </li>
+                    <li className={/[A-Z]/.test(formData.password) ? "text-green-600" : "text-red-500"}>
+                      One uppercase letter
+                    </li>
+                    <li className={/[a-z]/.test(formData.password) ? "text-green-600" : "text-red-500"}>
+                      One lowercase letter
+                    </li>
+                    <li className={/\d/.test(formData.password) ? "text-green-600" : "text-red-500"}>
+                      One number
+                    </li>
+                    <li className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? "text-green-600" : "text-red-500"}>
+                      One special character (!@#$%^&*)
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
+                Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            {error && (
+              <Alert variant="destructive" className="border-red-200 bg-red-50">
+                <AlertDescription className="text-red-800">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating Account..." : "Create Account"}
+            </Button>
+          </form>
+
+          <div className="text-center text-sm">
+            <p className="text-gray-600">
+              Already have an account?{" "}
+              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
+                Sign in here
+              </Link>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
