@@ -11,13 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ProfilePhotoUpload } from "@/components/ui/profile-photo-upload"
 import Link from "next/link"
 
 export default function ProfilePage() {
-  const { user, isLoading, logout, updateProfile } = useAuth()
+  const { user, isLoading, logout } = useAuth()
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -79,16 +77,9 @@ export default function ProfilePage() {
     setMessage("")
 
     try {
-      const result = await updateProfile({
-        fullName: formData.fullName,
-        avatar: formData.avatar,
-      })
-      
-      if (result.success) {
-        setMessage(result.message)
-      } else {
-        setMessage(result.message)
-      }
+      // Simulate API call - In real app, this would update the user profile
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setMessage("Profile updated successfully!")
     } catch (error) {
       setMessage("Failed to update profile. Please try again.")
     } finally {
@@ -182,20 +173,6 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleAvatarChange = async (photoUrl: string) => {
-    // Update form data
-    handleInputChange("avatar", photoUrl)
-    
-    // Immediately update the user context so the avatar shows up right away
-    if (user) {
-      try {
-        await updateProfile({ avatar: photoUrl })
-      } catch (error) {
-        console.error("Failed to update avatar immediately:", error)
-      }
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
@@ -221,12 +198,9 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4 mb-4">
-                <Avatar className="w-16 h-16">
-                  <AvatarImage src={user.avatar || ""} alt={user.fullName} />
-                  <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                    {user.fullName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-2xl font-semibold text-primary">{user.fullName.charAt(0).toUpperCase()}</span>
+                </div>
                 <div>
                   <h3 className="text-xl font-semibold">{user.fullName}</h3>
                   <p className="text-muted-foreground">{user.email}</p>
@@ -279,12 +253,13 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Profile Photo</Label>
-                  <ProfilePhotoUpload
-                    currentPhoto={formData.avatar}
-                    userId={user?.id || ""}
-                    onPhotoChange={handleAvatarChange}
-                    disabled={isUpdating}
+                  <Label htmlFor="avatar">Avatar URL (Optional)</Label>
+                  <Input
+                    id="avatar"
+                    type="url"
+                    placeholder="https://example.com/avatar.jpg"
+                    value={formData.avatar}
+                    onChange={(e) => handleInputChange("avatar", e.target.value)}
                   />
                 </div>
 
