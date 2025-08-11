@@ -3,12 +3,7 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-<<<<<<< HEAD
 import { useOwnerBookings, useOwnerVenues, useCurrentOwnerId } from "@/hooks/use-owner-data"
-=======
-import { mockOwnerStats } from "@/lib/owner-data"
-import { mockVenues } from "@/lib/venue-data"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +16,6 @@ export default function OwnerBookingsPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
   const [selectedFacility, setSelectedFacility] = useState("all")
-<<<<<<< HEAD
   const [selectedTab, setSelectedTab] = useState("upcoming")
 
   // Get current owner ID (defaulting to 1 for demo)
@@ -32,11 +26,6 @@ export default function OwnerBookingsPage() {
   
   // Fetch all bookings initially
   const { bookings: allBookings, loading: bookingsLoading, error } = useOwnerBookings(ownerId, undefined, undefined, undefined, 1, 100)
-=======
-
-  const ownerFacilities = mockVenues.filter((v) => v.ownerId === "2")
-  const allBookings = mockOwnerStats.recentBookings
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "facility_owner")) {
@@ -59,7 +48,6 @@ export default function OwnerBookingsPage() {
     return null
   }
 
-<<<<<<< HEAD
   // Show loading state while fetching data
   if (bookingsLoading || venuesLoading) {
     return (
@@ -86,8 +74,6 @@ export default function OwnerBookingsPage() {
     )
   }
 
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -101,7 +87,6 @@ export default function OwnerBookingsPage() {
     }
   }
 
-<<<<<<< HEAD
   // Filter bookings by facility if selected
   const filteredBookings = selectedFacility === "all" 
     ? allBookings 
@@ -128,11 +113,6 @@ export default function OwnerBookingsPage() {
   })
   
   const cancelledBookings = filteredBookings.filter((booking) => booking.status === "cancelled")
-=======
-  const upcomingBookings = allBookings.filter((b) => b.status === "confirmed")
-  const completedBookings = allBookings.filter((b) => b.status === "completed")
-  const cancelledBookings = allBookings.filter((b) => b.status === "cancelled")
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   const BookingCard = ({ booking }: { booking: any }) => (
     <Card>
@@ -140,11 +120,7 @@ export default function OwnerBookingsPage() {
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">{booking.userName}</CardTitle>
-<<<<<<< HEAD
             <p className="text-muted-foreground">{booking.courtName} - {booking.venueName}</p>
-=======
-            <p className="text-muted-foreground">{booking.courtName}</p>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
           </div>
           <Badge className={getStatusColor(booking.status)}>
             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -155,7 +131,6 @@ export default function OwnerBookingsPage() {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Date:</span>
-<<<<<<< HEAD
             <span className="font-medium">{format(parseISO(booking.bookingDate), "MMM dd, yyyy")}</span>
           </div>
           <div className="flex justify-between">
@@ -182,18 +157,6 @@ export default function OwnerBookingsPage() {
               <span className="text-sm">{booking.userEmail}</span>
             </div>
           )}
-=======
-            <span className="font-medium">{format(parseISO(booking.date), "MMM dd, yyyy")}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Time:</span>
-            <span className="font-medium">{booking.time}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Amount:</span>
-            <span className="font-semibold">₹{booking.amount}</span>
-          </div>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </div>
       </CardContent>
     </Card>
@@ -232,11 +195,7 @@ export default function OwnerBookingsPage() {
                     <SelectContent>
                       <SelectItem value="all">All Facilities</SelectItem>
                       {ownerFacilities.map((facility) => (
-<<<<<<< HEAD
                         <SelectItem key={facility.id} value={facility.id.toString()}>
-=======
-                        <SelectItem key={facility.id} value={facility.id}>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
                           {facility.name}
                         </SelectItem>
                       ))}

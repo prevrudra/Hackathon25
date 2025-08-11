@@ -1,13 +1,8 @@
 "use client"
 
-<<<<<<< HEAD
 import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-=======
-import { useState } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { mockVenues } from "@/lib/venue-data"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
@@ -36,7 +31,6 @@ export default function BookCourtPage() {
   const [duration, setDuration] = useState(1)
   const [isBooking, setIsBooking] = useState(false)
   const [error, setError] = useState("")
-<<<<<<< HEAD
   const [unavailableSlots, setUnavailableSlots] = useState<Array<{
     startTime: string
     endTime: string
@@ -96,25 +90,12 @@ export default function BookCourtPage() {
             <h1 className="text-2xl font-bold text-gray-900">Venue not found</h1>
             <p className="mt-2 text-gray-600">The venue you're looking for doesn't exist.</p>
           </div>
-=======
-
-  if (!venue) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Venue not found</h1>
-          <Button onClick={() => router.back()}>Go Back</Button>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </div>
       </div>
     )
   }
 
   if (!user) {
-<<<<<<< HEAD
-=======
-    router.push("/login")
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     return null
   }
 
@@ -129,7 +110,6 @@ export default function BookCourtPage() {
       const endTimeString = `${endHour.toString().padStart(2, "0")}:00`
 
       if (endHour <= 23) {
-<<<<<<< HEAD
         const slotId = `${timeString}-${endTimeString}`
         
         // Check if this slot conflicts with existing bookings
@@ -156,9 +136,6 @@ export default function BookCourtPage() {
           isAvailable: !hasConflict,
           conflictInfo: conflictInfo || null
         })
-=======
-        slots.push(`${timeString}-${endTimeString}`)
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       }
     }
     return slots
@@ -171,16 +148,11 @@ export default function BookCourtPage() {
   const handleBooking = async () => {
     setError("")
 
-<<<<<<< HEAD
     if (!selectedCourt || !selectedDate || !selectedTimeSlot || !user) {
-=======
-    if (!selectedCourt || !selectedDate || !selectedTimeSlot) {
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       setError("Please select all required fields")
       return
     }
 
-<<<<<<< HEAD
     // Check if the selected slot is available
     const selectedSlot = timeSlots.find(slot => slot.id === selectedTimeSlot)
     if (!selectedSlot?.isAvailable) {
@@ -281,39 +253,6 @@ export default function BookCourtPage() {
       setError(error instanceof Error ? error.message : 'Booking failed. Please try again.')
       setIsBooking(false)
     }
-=======
-    setIsBooking(true)
-
-    // Simulate booking API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Simulate successful booking
-    const bookingId = `booking_${Date.now()}`
-
-    // In a real app, this would save to database
-    const newBooking = {
-      id: bookingId,
-      userId: user.id,
-      venueId: venue.id,
-      courtId: selectedCourt,
-      date: format(selectedDate, "yyyy-MM-dd"),
-      timeSlot: selectedTimeSlot,
-      duration,
-      totalPrice,
-      status: "confirmed" as const,
-      createdAt: new Date().toISOString(),
-    }
-
-    // Store in localStorage for demo
-    const existingBookings = JSON.parse(localStorage.getItem("user_bookings") || "[]")
-    existingBookings.push(newBooking)
-    localStorage.setItem("user_bookings", JSON.stringify(existingBookings))
-
-    setIsBooking(false)
-
-    // Redirect to success page
-    router.push(`/booking-success?id=${bookingId}`)
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   }
 
   return (
@@ -406,21 +345,17 @@ export default function BookCourtPage() {
 
                 <div className="space-y-2">
                   <Label>Time Slot</Label>
-<<<<<<< HEAD
                   {checkingAvailability && (
                     <div className="text-sm text-gray-500 mb-2">
                       Checking availability...
                     </div>
                   )}
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
                   <Select value={selectedTimeSlot} onValueChange={setSelectedTimeSlot}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select time slot" />
                     </SelectTrigger>
                     <SelectContent>
                       {timeSlots.map((slot) => (
-<<<<<<< HEAD
                         <SelectItem 
                           key={slot.id} 
                           value={slot.id}
@@ -435,15 +370,10 @@ export default function BookCourtPage() {
                               </span>
                             )}
                           </div>
-=======
-                        <SelectItem key={slot} value={slot}>
-                          {slot}
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-<<<<<<< HEAD
                   
                   {selectedTimeSlot && !timeSlots.find(s => s.id === selectedTimeSlot)?.isAvailable && (
                     <Alert className="mt-2">
@@ -452,8 +382,6 @@ export default function BookCourtPage() {
                       </AlertDescription>
                     </Alert>
                   )}
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
                 </div>
               </CardContent>
             </Card>
@@ -510,7 +438,6 @@ export default function BookCourtPage() {
 
                 {error && (
                   <Alert variant="destructive">
-<<<<<<< HEAD
                     <AlertDescription>
                       {error}
                       {(error.includes("already booked") || error.includes("overlaps")) && (
@@ -521,9 +448,6 @@ export default function BookCourtPage() {
                         </div>
                       )}
                     </AlertDescription>
-=======
-                    <AlertDescription>{error}</AlertDescription>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
                   </Alert>
                 )}
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
-<<<<<<< HEAD
 import { useRouter } from "next/navigation"
 import { 
   mockVenues, 
@@ -11,47 +10,28 @@ import {
   hasUserBookedVenue,
   type Booking 
 } from "@/lib/venue-data"
-=======
-import { useAppState } from "@/lib/app-state"
-import { useRouter } from "next/navigation"
-import type { Booking } from "@/lib/venue-data"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-<<<<<<< HEAD
 import { ReviewDialog } from "@/components/venues/review-dialog"
 import Link from "next/link"
 import { format, parseISO, isAfter } from "date-fns"
 import { Star } from "lucide-react"
-=======
-import { ReviewForm } from "@/components/reviews/review-form"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import Link from "next/link"
-import { format, parseISO, isAfter } from "date-fns"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
 export default function MyBookingsPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-<<<<<<< HEAD
   const [bookings, setBookings] = useState<Booking[]>([])
   const [cancellingBooking, setCancellingBooking] = useState<string | null>(null)
   const [refreshReviews, setRefreshReviews] = useState(0) // For triggering review refresh
-=======
-  const { bookings, venues, reviews, cancelBooking, refreshStats } = useAppState()
-  const [cancellingBooking, setCancellingBooking] = useState<string | null>(null)
-  const [reviewDialogOpen, setReviewDialogOpen] = useState<string | null>(null)
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/login")
       return
     }
-<<<<<<< HEAD
 
     if (user) {
       // Fetch bookings from SQLite database and localStorage (for backward compatibility)
@@ -103,9 +83,6 @@ export default function MyBookingsPage() {
       fetchBookings()
     }
   }, [user, isLoading, router, refreshReviews]) // Added refreshReviews to dependencies
-=======
-  }, [user, isLoading, router])
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   if (isLoading) {
     return (
@@ -125,7 +102,6 @@ export default function MyBookingsPage() {
   const handleCancelBooking = async (bookingId: string) => {
     setCancellingBooking(bookingId)
 
-<<<<<<< HEAD
     try {
       // Try to cancel via API first
       const response = await fetch('/api/bookings', {
@@ -179,24 +155,12 @@ export default function MyBookingsPage() {
       )
       localStorage.setItem("user_bookings", JSON.stringify(updatedStoredBookings))
     }
-=======
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Use real cancel function
-    cancelBooking(bookingId)
-    refreshStats()
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
     setCancellingBooking(null)
   }
 
   const getVenueDetails = (venueId: string) => {
-<<<<<<< HEAD
     return mockVenues.find((v) => v.id === venueId)
-=======
-    return venues.find((v) => v.id === venueId)
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   }
 
   const getCourtDetails = (venueId: string, courtId: string) => {
@@ -223,7 +187,6 @@ export default function MyBookingsPage() {
     }
   }
 
-<<<<<<< HEAD
   // Helper function to safely parse dates from different formats
   const parseBookingDate = (dateStr: string): Date => {
     try {
@@ -271,35 +234,12 @@ export default function MyBookingsPage() {
 
   const cancelledBookings = bookings.filter((b) => b.status === "cancelled")
 
-=======
-  const userBookings = bookings.filter((b) => b.userId === user.id)
-
-  const upcomingBookings = userBookings.filter((b) => b.status === "confirmed" && isAfter(parseISO(b.date), new Date()))
-
-  const pastBookings = userBookings.filter((b) => b.status === "completed" || !isAfter(parseISO(b.date), new Date()))
-
-  const cancelledBookings = userBookings.filter((b) => b.status === "cancelled")
-
-  const canReviewVenue = (booking: Booking) => {
-    const bookingDate = parseISO(booking.date)
-    const now = new Date()
-    const hasBookingCompleted = booking.status === "completed" || !isAfter(bookingDate, now)
-
-    const hasAlreadyReviewed = reviews.some(
-      (review) => review.venueId === booking.venueId && review.userId === user?.id,
-    )
-
-    return hasBookingCompleted && !hasAlreadyReviewed
-  }
-
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const BookingCard = ({ booking }: { booking: Booking }) => {
     const venue = getVenueDetails(booking.venueId)
     const court = getCourtDetails(booking.venueId, booking.courtId)
 
     if (!venue || !court) return null
 
-<<<<<<< HEAD
     // Check if booking is completed or past date
     const isBookingCompleted = booking.status === "completed" || !isAfter(parseBookingDate(booking.date), new Date())
     
@@ -315,10 +255,6 @@ export default function MyBookingsPage() {
 
     return (
       <Card key={`${booking.id}-${refreshReviews}`}>
-=======
-    return (
-      <Card>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
@@ -334,11 +270,7 @@ export default function MyBookingsPage() {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Date:</span>
-<<<<<<< HEAD
               <span className="font-medium">{format(parseBookingDate(booking.date), "MMM dd, yyyy")}</span>
-=======
-              <span className="font-medium">{format(parseISO(booking.date), "MMM dd, yyyy")}</span>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Time:</span>
@@ -356,7 +288,6 @@ export default function MyBookingsPage() {
             </div>
           </div>
 
-<<<<<<< HEAD
           {/* Show existing review if user has reviewed */}
           {existingReview && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -380,8 +311,6 @@ export default function MyBookingsPage() {
             </div>
           )}
 
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" asChild className="bg-transparent">
               <Link href={`/venues/${booking.venueId}`}>View Venue</Link>
@@ -398,7 +327,6 @@ export default function MyBookingsPage() {
               </Button>
             )}
 
-<<<<<<< HEAD
             {/* Show Add Review button if booking is completed and no review exists */}
             {canReview && (
               <ReviewDialog
@@ -412,29 +340,6 @@ export default function MyBookingsPage() {
                   Add Review
                 </Button>
               </ReviewDialog>
-=======
-            {canReviewVenue(booking) && (
-              <Dialog
-                open={reviewDialogOpen === booking.id}
-                onOpenChange={(open) => setReviewDialogOpen(open ? booking.id : null)}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
-                  >
-                    Write Review
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Review {venue.name}</DialogTitle>
-                  </DialogHeader>
-                  <ReviewForm venueId={booking.venueId} onReviewSubmitted={() => setReviewDialogOpen(null)} />
-                </DialogContent>
-              </Dialog>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
             )}
           </div>
         </CardContent>
@@ -459,11 +364,7 @@ export default function MyBookingsPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-<<<<<<< HEAD
         {bookings.length === 0 ? (
-=======
-        {userBookings.length === 0 ? (
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
           <Card>
             <CardContent className="text-center py-12">
               <div className="text-gray-400 mb-4">

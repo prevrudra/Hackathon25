@@ -11,18 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-<<<<<<< HEAD
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import Link from "next/link"
 
 export default function ProfilePage() {
   const { user, isLoading, logout } = useAuth()
-=======
-import Link from "next/link"
-
-export default function ProfilePage() {
-  const { user, isLoading } = useAuth()
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -32,7 +25,6 @@ export default function ProfilePage() {
   })
   const [isUpdating, setIsUpdating] = useState(false)
   const [message, setMessage] = useState("")
-<<<<<<< HEAD
   
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -48,8 +40,6 @@ export default function ProfilePage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("")
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -81,16 +71,11 @@ export default function ProfilePage() {
     return null
   }
 
-<<<<<<< HEAD
     const handleSubmit = async (e: React.FormEvent) => {
-=======
-  const handleSubmit = async (e: React.FormEvent) => {
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     e.preventDefault()
     setIsUpdating(true)
     setMessage("")
 
-<<<<<<< HEAD
     try {
       // Simulate API call - In real app, this would update the user profile
       await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -182,15 +167,6 @@ export default function ProfilePage() {
       setIsDeletingAccount(false)
       setShowDeleteDialog(false)
     }
-=======
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // In a real app, this would update the user in the database
-    // For demo, we'll just show a success message
-    setMessage("Profile updated successfully!")
-    setIsUpdating(false)
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -311,7 +287,6 @@ export default function ProfilePage() {
                   <h4 className="font-medium">Change Password</h4>
                   <p className="text-sm text-muted-foreground">Update your account password</p>
                 </div>
-<<<<<<< HEAD
                 <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="bg-transparent">
@@ -400,27 +375,11 @@ export default function ProfilePage() {
                     </form>
                   </DialogContent>
                 </Dialog>
-=======
-                <Button variant="outline" className="bg-transparent">
-                  Change Password
-                </Button>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="font-medium">Two-Factor Authentication</h4>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                </div>
-                <Button variant="outline" className="bg-transparent">
-                  Enable 2FA
-                </Button>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
               </div>
 
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="font-medium">Delete Account</h4>
-<<<<<<< HEAD
                   <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
                 </div>
                 <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -470,11 +429,6 @@ export default function ProfilePage() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-=======
-                  <p className="text-sm text-muted-foreground">Permanently delete your account</p>
-                </div>
-                <Button variant="destructive">Delete Account</Button>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
               </div>
             </CardContent>
           </Card>

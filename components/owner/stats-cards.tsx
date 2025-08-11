@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { FacilityOwnerStats } from "@/lib/owner-data"
-<<<<<<< HEAD
 import type { OwnerStats } from "@/lib/sqlite-owner-database"
 
 interface StatsCardsProps {
@@ -11,14 +10,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
   // Check if it's the new OwnerStats format
   const isNewFormat = 'monthlyRevenue' in stats
   
-=======
-
-interface StatsCardsProps {
-  stats: FacilityOwnerStats
-}
-
-export function StatsCards({ stats }: StatsCardsProps) {
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <Card>
@@ -35,7 +26,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalBookings}</div>
-<<<<<<< HEAD
           {isNewFormat && 'todayBookings' in stats && (
             <p className="text-xs text-muted-foreground">
               {stats.todayBookings} today
@@ -44,9 +34,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
           {!isNewFormat && (
             <p className="text-xs text-muted-foreground">+12% from last month</p>
           )}
-=======
-          <p className="text-xs text-muted-foreground">+12% from last month</p>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </CardContent>
       </Card>
 
@@ -64,7 +51,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">₹{stats.totalEarnings.toLocaleString()}</div>
-<<<<<<< HEAD
           {isNewFormat && 'monthlyRevenue' in stats && (
             <p className="text-xs text-muted-foreground">
               ₹{stats.monthlyRevenue.toLocaleString()} this month
@@ -73,9 +59,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
           {!isNewFormat && (
             <p className="text-xs text-muted-foreground">+8% from last month</p>
           )}
-=======
-          <p className="text-xs text-muted-foreground">+8% from last month</p>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </CardContent>
       </Card>
 
@@ -93,7 +76,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.activeFacilities}</div>
-<<<<<<< HEAD
           {isNewFormat && 'occupancyRate' in stats && (
             <p className="text-xs text-muted-foreground">
               {stats.occupancyRate}% occupancy rate
@@ -102,9 +84,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
           {!isNewFormat && (
             <p className="text-xs text-muted-foreground">All facilities approved</p>
           )}
-=======
-          <p className="text-xs text-muted-foreground">All facilities approved</p>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </CardContent>
       </Card>
 
@@ -122,7 +101,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalCourts}</div>
-<<<<<<< HEAD
           {isNewFormat && 'pendingPayments' in stats && stats.pendingPayments > 0 && (
             <p className="text-xs text-orange-600">
               ₹{stats.pendingPayments.toLocaleString()} pending
@@ -131,9 +109,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
           {(!isNewFormat || !('pendingPayments' in stats) || stats.pendingPayments === 0) && (
             <p className="text-xs text-muted-foreground">Across all facilities</p>
           )}
-=======
-          <p className="text-xs text-muted-foreground">Across all facilities</p>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </CardContent>
       </Card>
     </div>

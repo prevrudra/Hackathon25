@@ -5,19 +5,13 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-<<<<<<< HEAD
 import { useUserStats } from "@/hooks/use-user-stats"
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import Link from "next/link"
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
-<<<<<<< HEAD
   const { stats, loading: statsLoading } = useUserStats(user?.id || null)
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -160,7 +154,6 @@ export default function DashboardPage() {
 
         <div className="mt-12 bg-white rounded-lg p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Quick Stats</h3>
-<<<<<<< HEAD
           {statsLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
@@ -213,26 +206,6 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-=======
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">0</div>
-              <div className="text-sm text-gray-600">Total Bookings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">0</div>
-              <div className="text-sm text-gray-600">Active Bookings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">0</div>
-              <div className="text-sm text-gray-600">Favorite Venues</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">₹0</div>
-              <div className="text-sm text-gray-600">Total Spent</div>
-            </div>
-          </div>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </div>
       </main>
     </div>

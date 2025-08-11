@@ -2,19 +2,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-<<<<<<< HEAD
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-=======
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import type { FacilityOwnerStats } from "@/lib/owner-data"
 
 interface PeakHoursChartProps {
   stats: FacilityOwnerStats
-<<<<<<< HEAD
   loading?: boolean
-=======
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 }
 
 const chartConfig = {
@@ -24,7 +17,6 @@ const chartConfig = {
   },
 }
 
-<<<<<<< HEAD
 export function PeakHoursChart({ stats, loading }: PeakHoursChartProps) {
   const hasData = stats.peakHours && stats.peakHours.length > 0
   const totalBookings = hasData ? stats.peakHours.reduce((sum, hour) => sum + (hour.bookings || 0), 0) : 0
@@ -32,14 +24,10 @@ export function PeakHoursChart({ stats, loading }: PeakHoursChartProps) {
     (hour.bookings || 0) > (peak.bookings || 0) ? hour : peak
   ) : null
 
-=======
-export function PeakHoursChart({ stats }: PeakHoursChartProps) {
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   return (
     <Card>
       <CardHeader>
         <CardTitle>Peak Booking Hours</CardTitle>
-<<<<<<< HEAD
         <CardDescription>
           {hasData && peakHour ? (
             `Peak: ${peakHour.hour} (${peakHour.bookings} bookings) | Total: ${totalBookings} bookings`
@@ -88,27 +76,6 @@ export function PeakHoursChart({ stats }: PeakHoursChartProps) {
             </ResponsiveContainer>
           </ChartContainer>
         )}
-=======
-        <CardDescription>Hourly booking distribution</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={stats.peakHours}>
-              <XAxis dataKey="hour" />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
-                type="monotone"
-                dataKey="bookings"
-                stroke="var(--color-bookings)"
-                fill="var(--color-bookings)"
-                fillOpacity={0.3}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartContainer>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       </CardContent>
     </Card>
   )

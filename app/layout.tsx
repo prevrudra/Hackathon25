@@ -3,11 +3,7 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { AuthProvider } from "@/lib/auth-context"
-<<<<<<< HEAD
 import { Toaster } from "@/components/ui/sonner"
-=======
-import { AppStateProvider } from "@/lib/app-state"
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -34,14 +30,8 @@ html {
         `}</style>
       </head>
       <body>
-<<<<<<< HEAD
         <AuthProvider>{children}</AuthProvider>
         <Toaster />
-=======
-        <AuthProvider>
-          <AppStateProvider>{children}</AppStateProvider>
-        </AuthProvider>
->>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       </body>
     </html>
   )
