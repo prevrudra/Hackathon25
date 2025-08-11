@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { mockPendingFacilities, type PendingFacility } from "@/lib/admin-data"
+import { type PendingFacility } from "@/lib/admin-data"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,10 +18,11 @@ import { format, parseISO } from "date-fns"
 export default function AdminFacilitiesPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-  const [facilities, setFacilities] = useState(mockPendingFacilities)
+  const [facilities, setFacilities] = useState<PendingFacility[]>([])
   const [selectedFacility, setSelectedFacility] = useState<PendingFacility | null>(null)
   const [reviewComment, setReviewComment] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [facilitiesLoading, setFacilitiesLoading] = useState(true)
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
@@ -29,7 +30,29 @@ export default function AdminFacilitiesPage() {
     }
   }, [user, isLoading, router])
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchPendingFacilities = async () => {
+      try {
+        const response = await fetch('/api/admin/facilities/pending')
+        if (response.ok) {
+          const data = await response.json()
+          setFacilities(data)
+        } else {
+          console.error('Failed to fetch pending facilities')
+        }
+      } catch (error) {
+        console.error('Error fetching pending facilities:', error)
+      } finally {
+        setFacilitiesLoading(false)
+      }
+    }
+
+    if (user && user.role === "admin") {
+      fetchPendingFacilities()
+    }
+  }, [user])
+
+  if (isLoading || facilitiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -47,14 +70,30 @@ export default function AdminFacilitiesPage() {
   const handleApprove = async (facilityId: string) => {
     setIsProcessing(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch('/api/admin/facilities/action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'approve', venueId: facilityId }),
+      })
 
-    // Remove from pending list
-    setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
-    setSelectedFacility(null)
-    setReviewComment("")
-    setIsProcessing(false)
+      if (response.ok) {
+        // Remove from pending list
+        setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
+        setSelectedFacility(null)
+        setReviewComment("")
+      } else {
+        console.error('Failed to approve facility')
+        alert('Failed to approve facility. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error approving facility:', error)
+      alert('Error approving facility. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleReject = async (facilityId: string) => {
@@ -65,14 +104,34 @@ export default function AdminFacilitiesPage() {
 
     setIsProcessing(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch('/api/admin/facilities/action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'reject', 
+          venueId: facilityId, 
+          reason: reviewComment 
+        }),
+      })
 
-    // Remove from pending list
-    setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
-    setSelectedFacility(null)
-    setReviewComment("")
-    setIsProcessing(false)
+      if (response.ok) {
+        // Remove from pending list
+        setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
+        setSelectedFacility(null)
+        setReviewComment("")
+      } else {
+        console.error('Failed to reject facility')
+        alert('Failed to reject facility. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error rejecting facility:', error)
+      alert('Error rejecting facility. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const pendingFacilities = facilities

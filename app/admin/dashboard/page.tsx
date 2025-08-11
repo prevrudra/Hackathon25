@@ -2,19 +2,21 @@
 
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminStatsCards } from "@/components/admin/admin-stats-cards"
 import { UserRegistrationChart } from "@/components/admin/user-registration-chart"
 import { SportPopularityChart } from "@/components/admin/sport-popularity-chart"
 import { RecentActivity } from "@/components/admin/recent-activity"
-import { mockAdminStats } from "@/lib/admin-data"
+import { AdminStats } from "@/lib/admin-data"
 import Link from "next/link"
 
 export default function AdminDashboardPage() {
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
@@ -22,7 +24,29 @@ export default function AdminDashboardPage() {
     }
   }, [user, isLoading, router])
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const response = await fetch('/api/admin/stats')
+        if (response.ok) {
+          const stats = await response.json()
+          setAdminStats(stats)
+        } else {
+          console.error('Failed to fetch admin stats')
+        }
+      } catch (error) {
+        console.error('Error fetching admin stats:', error)
+      } finally {
+        setStatsLoading(false)
+      }
+    }
+
+    if (user && user.role === "admin") {
+      fetchAdminStats()
+    }
+  }, [user])
+
+  if (isLoading || statsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -35,6 +59,16 @@ export default function AdminDashboardPage() {
 
   if (!user || user.role !== "admin") {
     return null
+  }
+
+  if (!adminStats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Failed to load admin dashboard data</p>
+        </div>
+      </div>
+    )
   }
 
   const handleLogout = () => {
@@ -64,18 +98,18 @@ export default function AdminDashboardPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Stats Overview */}
-          <AdminStatsCards stats={mockAdminStats} />
+          <AdminStatsCards stats={adminStats} />
 
           {/* Charts Row */}
           <div className="grid lg:grid-cols-2 gap-6">
-            <UserRegistrationChart stats={mockAdminStats} />
-            <SportPopularityChart stats={mockAdminStats} />
+            <UserRegistrationChart stats={adminStats} />
+            <SportPopularityChart stats={adminStats} />
           </div>
 
           {/* Activity and Quick Actions */}
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <RecentActivity stats={mockAdminStats} />
+              <RecentActivity stats={adminStats} />
             </div>
 
             {/* Quick Actions */}
@@ -86,7 +120,7 @@ export default function AdminDashboardPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button className="w-full" asChild>
-                    <Link href="/admin/facilities">Review Facilities ({mockAdminStats.pendingApprovals})</Link>
+                    <Link href="/admin/facilities">Review Facilities ({adminStats.pendingApprovals})</Link>
                   </Button>
                   <Button variant="outline" className="w-full bg-transparent" asChild>
                     <Link href="/admin/users">Manage Users</Link>
@@ -115,11 +149,11 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Active Courts</span>
-                      <span className="text-sm font-medium">{mockAdminStats.totalActiveCourts}</span>
+                      <span className="text-sm font-medium">{adminStats.totalActiveCourts}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Pending Reviews</span>
-                      <span className="text-sm font-medium">{mockAdminStats.pendingApprovals}</span>
+                      <span className="text-sm font-medium">{adminStats.pendingApprovals}</span>
                     </div>
                   </div>
                 </CardContent>

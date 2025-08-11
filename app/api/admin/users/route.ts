@@ -1,44 +1,40 @@
 import { type NextRequest, NextResponse } from "next/server"
-import db from "@/lib/database"
+import { getPlatformUsers, banUser, unbanUser } from '@/lib/admin-database'
 
 export async function GET() {
   try {
-    const users = db
-      .prepare(`
-      SELECT id, email, fullName, role, isVerified, isBanned, createdAt
-      FROM users
-      WHERE role != 'admin'
-      ORDER BY createdAt DESC
-    `)
-      .all()
-
+    const users = await getPlatformUsers()
     return NextResponse.json(users)
   } catch (error) {
-    console.error("Error fetching users:", error)
-    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
+    console.error('Error in platform users API:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch platform users' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { action, userId } = await request.json()
+    const { action, userId, reason } = await request.json()
 
     if (action === "ban") {
-      db.prepare(`
-        UPDATE users 
-        SET isBanned = TRUE 
-        WHERE id = ?
-      `).run(userId)
-
-      return NextResponse.json({ success: true, message: "User banned successfully" })
+      const success = await banUser(userId, reason)
+      if (success) {
+        return NextResponse.json({ 
+          success: true, 
+          message: `User banned successfully${reason ? ` - Reason: ${reason}` : ''}` 
+        })
+      } else {
+        return NextResponse.json({ error: "Failed to ban user" }, { status: 500 })
+      }
     } else if (action === "unban") {
-      db.prepare(`
-        UPDATE users 
-        SET isBanned = FALSE 
-        WHERE id = ?
-      `).run(userId)
-
-      return NextResponse.json({ success: true, message: "User unbanned successfully" })
+      const success = await unbanUser(userId)
+      if (success) {
+        return NextResponse.json({ success: true, message: "User unbanned successfully" })
+      } else {
+        return NextResponse.json({ error: "Failed to unban user" }, { status: 500 })
+      }
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
