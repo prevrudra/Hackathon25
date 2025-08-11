@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+<<<<<<< HEAD
 import { mockPlatformUsers, type PlatformUser } from "@/lib/admin-data"
+=======
+import { useAppState } from "@/lib/app-state"
+import type { PlatformUser } from "@/lib/admin-data"
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +20,11 @@ import { format, parseISO } from "date-fns"
 export default function AdminUsersPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+<<<<<<< HEAD
   const [users, setUsers] = useState(mockPlatformUsers)
+=======
+  const { platformUsers, banUser, unbanUser, refreshStats } = useAppState()
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -48,12 +57,28 @@ export default function AdminUsersPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
+<<<<<<< HEAD
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, isBanned: !u.isBanned } : u)))
+=======
+    const targetUser = platformUsers.find((u) => u.id === userId)
+    if (targetUser) {
+      if (targetUser.isBanned) {
+        unbanUser(userId)
+      } else {
+        banUser(userId)
+      }
+      refreshStats()
+    }
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
     setIsProcessing(null)
   }
 
+<<<<<<< HEAD
   const filteredUsers = users.filter((user) => {
+=======
+  const filteredUsers = platformUsers.filter((user) => {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     const matchesSearch =
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())

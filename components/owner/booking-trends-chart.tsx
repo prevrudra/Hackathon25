@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+<<<<<<< HEAD
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Legend, ComposedChart } from "recharts"
 import type { FacilityOwnerStats } from "@/lib/owner-data"
 import type { BookingTrend } from "@/lib/sqlite-owner-database"
@@ -9,6 +10,13 @@ import type { BookingTrend } from "@/lib/sqlite-owner-database"
 interface BookingTrendsChartProps {
   stats: FacilityOwnerStats
   loading?: boolean
+=======
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import type { FacilityOwnerStats } from "@/lib/owner-data"
+
+interface BookingTrendsChartProps {
+  stats: FacilityOwnerStats
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 }
 
 const chartConfig = {
@@ -17,20 +25,29 @@ const chartConfig = {
     color: "hsl(var(--chart-1))",
   },
   earnings: {
+<<<<<<< HEAD
     label: "Earnings (₹)",
+=======
+    label: "Earnings",
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     color: "hsl(var(--chart-2))",
   },
 }
 
+<<<<<<< HEAD
 export function BookingTrendsChart({ stats, loading }: BookingTrendsChartProps) {
   const hasData = stats.bookingTrends && stats.bookingTrends.length > 0
   const totalBookings = hasData ? stats.bookingTrends.reduce((sum, trend) => sum + (trend.bookings || 0), 0) : 0
   const totalEarnings = hasData ? stats.bookingTrends.reduce((sum, trend) => sum + (trend.earnings || 0), 0) : 0
 
+=======
+export function BookingTrendsChart({ stats }: BookingTrendsChartProps) {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   return (
     <Card>
       <CardHeader>
         <CardTitle>Booking Trends</CardTitle>
+<<<<<<< HEAD
         <CardDescription>
           {hasData ? (
             `${totalBookings} bookings | ₹${totalEarnings.toLocaleString()} earnings this week`
@@ -92,6 +109,21 @@ export function BookingTrendsChart({ stats, loading }: BookingTrendsChartProps) 
             </ResponsiveContainer>
           </ChartContainer>
         )}
+=======
+        <CardDescription>Daily bookings and earnings over the last week</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stats.bookingTrends}>
+              <XAxis dataKey="date" />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="bookings" fill="var(--color-bookings)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       </CardContent>
     </Card>
   )

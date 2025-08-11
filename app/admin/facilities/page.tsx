@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+<<<<<<< HEAD
 import { mockPendingFacilities, type PendingFacility } from "@/lib/admin-data"
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +18,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { format, parseISO } from "date-fns"
 
+<<<<<<< HEAD
 export default function AdminFacilitiesPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
@@ -22,14 +26,61 @@ export default function AdminFacilitiesPage() {
   const [selectedFacility, setSelectedFacility] = useState<PendingFacility | null>(null)
   const [reviewComment, setReviewComment] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+=======
+interface PendingFacility {
+  id: string
+  name: string
+  description: string
+  location: string
+  ownerName: string
+  ownerEmail: string
+  sports: string[]
+  amenities: string[]
+  images: string[]
+  courts: number
+  submittedAt: string
+}
+
+export default function AdminFacilitiesPage() {
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
+  const [pendingFacilities, setPendingFacilities] = useState<PendingFacility[]>([])
+  const [selectedFacility, setSelectedFacility] = useState<PendingFacility | null>(null)
+  const [reviewComment, setReviewComment] = useState("")
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [isLoading2, setIsLoading2] = useState(true)
+
+  const fetchFacilities = async () => {
+    try {
+      const response = await fetch("/api/admin/facilities")
+      if (response.ok) {
+        const data = await response.json()
+        setPendingFacilities(data)
+      }
+    } catch (error) {
+      console.error("Error fetching facilities:", error)
+    } finally {
+      setIsLoading2(false)
+    }
+  }
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
       router.push("/login")
+<<<<<<< HEAD
     }
   }, [user, isLoading, router])
 
   if (isLoading) {
+=======
+    } else if (user?.role === "admin") {
+      fetchFacilities()
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading || isLoading2) {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -47,6 +98,7 @@ export default function AdminFacilitiesPage() {
   const handleApprove = async (facilityId: string) => {
     setIsProcessing(true)
 
+<<<<<<< HEAD
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -55,6 +107,29 @@ export default function AdminFacilitiesPage() {
     setSelectedFacility(null)
     setReviewComment("")
     setIsProcessing(false)
+=======
+    try {
+      const response = await fetch("/api/admin/facilities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve", facilityId, comment: reviewComment }),
+      })
+
+      if (response.ok) {
+        await fetchFacilities() // Refresh the list
+        setSelectedFacility(null)
+        setReviewComment("")
+        alert("Facility approved successfully!")
+      } else {
+        alert("Failed to approve facility")
+      }
+    } catch (error) {
+      console.error("Error approving facility:", error)
+      alert("Error approving facility")
+    } finally {
+      setIsProcessing(false)
+    }
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   }
 
   const handleReject = async (facilityId: string) => {
@@ -65,6 +140,7 @@ export default function AdminFacilitiesPage() {
 
     setIsProcessing(true)
 
+<<<<<<< HEAD
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -78,6 +154,33 @@ export default function AdminFacilitiesPage() {
   const pendingFacilities = facilities
   const approvedFacilities: PendingFacility[] = [] // Would come from API
   const rejectedFacilities: PendingFacility[] = [] // Would come from API
+=======
+    try {
+      const response = await fetch("/api/admin/facilities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reject", facilityId, comment: reviewComment }),
+      })
+
+      if (response.ok) {
+        await fetchFacilities() // Refresh the list
+        setSelectedFacility(null)
+        setReviewComment("")
+        alert("Facility rejected successfully!")
+      } else {
+        alert("Failed to reject facility")
+      }
+    } catch (error) {
+      console.error("Error rejecting facility:", error)
+      alert("Error rejecting facility")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const approvedFacilities = pendingFacilities.filter((v) => v.isApproved)
+  const rejectedFacilities: PendingFacility[] = [] // Would track rejected facilities
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -280,11 +383,36 @@ export default function AdminFacilitiesPage() {
           </TabsContent>
 
           <TabsContent value="approved">
+<<<<<<< HEAD
             <Alert>
               <AlertDescription>
                 Approved facilities will be shown here. This would typically load from the database.
               </AlertDescription>
             </Alert>
+=======
+            <div className="grid gap-4">
+              {approvedFacilities.map((venue) => (
+                <Card key={venue.id}>
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-lg">{venue.name}</h3>
+                        <p className="text-muted-foreground">{venue.address}</p>
+                        <div className="flex gap-2 mt-2">
+                          {venue.sports.map((sport) => (
+                            <Badge key={sport} variant="outline">
+                              {sport}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <Badge variant="default">Approved</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
           </TabsContent>
 
           <TabsContent value="rejected">

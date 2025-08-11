@@ -8,19 +8,25 @@ import { StatsCards } from "@/components/owner/stats-cards"
 import { BookingTrendsChart } from "@/components/owner/booking-trends-chart"
 import { PeakHoursChart } from "@/components/owner/peak-hours-chart"
 import { RecentBookings } from "@/components/owner/recent-bookings"
+<<<<<<< HEAD
 import { useCurrentOwnerId, useOwnerStats, useBookingTrends, usePeakHours } from "@/hooks/use-owner-data"
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 import { mockOwnerStats } from "@/lib/owner-data"
 import Link from "next/link"
 
 export default function OwnerDashboardPage() {
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
+<<<<<<< HEAD
   const ownerId = useCurrentOwnerId()
   
   // Fetch real data from database
   const { stats, loading: statsLoading, error: statsError } = useOwnerStats(ownerId)
   const { trends, loading: trendsLoading } = useBookingTrends(ownerId, 7)
   const { peakHours, loading: peakHoursLoading } = usePeakHours(ownerId)
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "facility_owner")) {
@@ -28,12 +34,20 @@ export default function OwnerDashboardPage() {
     }
   }, [user, isLoading, router])
 
+<<<<<<< HEAD
   if (isLoading || statsLoading) {
+=======
+  if (isLoading) {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+<<<<<<< HEAD
           <p className="mt-2 text-muted-foreground">Loading dashboard...</p>
+=======
+          <p className="mt-2 text-muted-foreground">Loading...</p>
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
         </div>
       </div>
     )
@@ -43,19 +57,25 @@ export default function OwnerDashboardPage() {
     return null
   }
 
+<<<<<<< HEAD
   // Handle database connection errors gracefully
   const isUsingRealData = stats && !statsError
 
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const handleLogout = () => {
     logout()
     router.push("/")
   }
 
+<<<<<<< HEAD
   // Use real data if available, fallback to mock data
   const dashboardStats = stats || mockOwnerStats
   const chartTrends = trends.length > 0 ? trends : mockOwnerStats.bookingTrends
   const chartPeakHours = peakHours.length > 0 ? peakHours : mockOwnerStats.peakHours
 
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b">
@@ -77,6 +97,7 @@ export default function OwnerDashboardPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+<<<<<<< HEAD
           {/* Database Status Indicator */}
           {isUsingRealData && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -172,6 +193,21 @@ export default function OwnerDashboardPage() {
                 stats={mockOwnerStats} 
                 ownerId={ownerId}
               />
+=======
+          {/* Stats Overview */}
+          <StatsCards stats={mockOwnerStats} />
+
+          {/* Charts Row */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <BookingTrendsChart stats={mockOwnerStats} />
+            <PeakHoursChart stats={mockOwnerStats} />
+          </div>
+
+          {/* Recent Activity */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <RecentBookings stats={mockOwnerStats} />
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
             </div>
 
             {/* Quick Actions */}

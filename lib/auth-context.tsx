@@ -37,15 +37,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const mockUsers: User[] = [
   {
     id: "1",
+<<<<<<< HEAD
     email: "owner1@quickcourt.com",
     fullName: "Rajesh Kumar",
     role: "facility_owner",
+=======
+    email: "admin@quickcourt.com",
+    fullName: "Admin User",
+    role: "admin",
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     isVerified: true,
   },
   {
     id: "2",
+<<<<<<< HEAD
     email: "owner2@quickcourt.com", 
     fullName: "Priya Sharma",
+=======
+    email: "owner@quickcourt.com",
+    fullName: "Facility Owner",
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     role: "facility_owner",
     isVerified: true,
   },
@@ -56,6 +67,7 @@ const mockUsers: User[] = [
     role: "user",
     isVerified: true,
   },
+<<<<<<< HEAD
   {
     id: "4",
     email: "admin@quickcourt.com",
@@ -63,6 +75,8 @@ const mockUsers: User[] = [
     role: "admin",
     isVerified: true,
   },
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 ]
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -86,8 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const foundUser = mockUsers.find((u) => u.email === email)
 
+<<<<<<< HEAD
     // For demo purposes, accept any non-empty password or the default password
     if (foundUser && (password === "password123" || password.length > 0)) {
+=======
+    if (foundUser && password === "password123") {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       setUser(foundUser)
       localStorage.setItem("quickcourt_user", JSON.stringify(foundUser))
       setIsLoading(false)

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { FacilityOwnerStats } from "@/lib/owner-data"
 import { format, parseISO } from "date-fns"
+<<<<<<< HEAD
 import { useEffect, useState } from "react"
 import type { RecentBooking, OwnerBooking } from "@/lib/sqlite-owner-database"
 
@@ -64,6 +65,14 @@ export function RecentBookings({ stats, ownerId }: RecentBookingsProps) {
   // Use database data if available, otherwise fallback to mock data
   const bookingsToShow = recentBookings.length > 0 ? recentBookings : stats.recentBookings
 
+=======
+
+interface RecentBookingsProps {
+  stats: FacilityOwnerStats
+}
+
+export function RecentBookings({ stats }: RecentBookingsProps) {
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -83,6 +92,7 @@ export function RecentBookings({ stats, ownerId }: RecentBookingsProps) {
         <CardTitle>Recent Bookings</CardTitle>
       </CardHeader>
       <CardContent>
+<<<<<<< HEAD
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -114,6 +124,29 @@ export function RecentBookings({ stats, ownerId }: RecentBookingsProps) {
             ))}
           </div>
         )}
+=======
+        <div className="space-y-4">
+          {stats.recentBookings.map((booking) => (
+            <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium">{booking.userName}</span>
+                  <Badge className={getStatusColor(booking.status)}>
+                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{booking.courtName}</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(parseISO(booking.date), "MMM dd")} • {booking.time}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold">₹{booking.amount}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
       </CardContent>
     </Card>
   )

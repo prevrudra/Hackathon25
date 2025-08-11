@@ -12,6 +12,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth, type UserRole } from "@/lib/auth-context"
 import Link from "next/link"
+<<<<<<< HEAD
+=======
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Upload, X } from "lucide-react"
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 
 export function SignupForm() {
   const [formData, setFormData] = useState({
@@ -21,11 +26,51 @@ export function SignupForm() {
     fullName: "",
     role: "" as UserRole | "",
   })
+<<<<<<< HEAD
+=======
+  const [profilePicture, setProfilePicture] = useState<File | null>(null)
+  const [profilePreview, setProfilePreview] = useState<string>("")
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const { signup, isLoading } = useAuth()
   const router = useRouter()
 
+<<<<<<< HEAD
+=======
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (1MB = 1024 * 1024 bytes)
+    if (file.size > 1024 * 1024) {
+      setError("Profile picture must be less than 1MB")
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file")
+      return
+    }
+
+    setError("")
+    setProfilePicture(file)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setProfilePreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeProfilePicture = () => {
+    setProfilePicture(null)
+    setProfilePreview("")
+  }
+
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -36,6 +81,7 @@ export function SignupForm() {
       return
     }
 
+<<<<<<< HEAD
     // Validate password strength
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters long")
@@ -62,16 +108,30 @@ export function SignupForm() {
       return
     }
 
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     if (!formData.role) {
       setError("Please select a role")
       return
     }
 
+<<<<<<< HEAD
+=======
+    if (!profilePicture) {
+      setError("Please upload a profile picture")
+      return
+    }
+
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     const result = await signup({
       email: formData.email,
       password: formData.password,
       fullName: formData.fullName,
       role: formData.role as UserRole,
+<<<<<<< HEAD
+=======
+      profilePicture: profilePicture,
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     })
 
     if (result.success) {
@@ -103,6 +163,52 @@ export function SignupForm() {
         <CardContent className="space-y-6 border-0 px-24">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
+<<<<<<< HEAD
+=======
+              <Label className="text-sm font-semibold text-gray-700">
+                Profile Picture <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex flex-col items-center space-y-4">
+                <Avatar className="w-24 h-24 border-4 border-gray-200">
+                  <AvatarImage src={profilePreview || "/placeholder.svg"} alt="Profile preview" />
+                  <AvatarFallback className="bg-gray-100 text-gray-400 text-lg">
+                    {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : <Upload className="w-8 h-8" />}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureChange}
+                    className="hidden"
+                    id="profile-picture"
+                  />
+                  <Label
+                    htmlFor="profile-picture"
+                    className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Choose Photo
+                  </Label>
+                  {profilePicture && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={removeProfilePicture}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 text-center">Upload a profile picture (max 1MB)</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
               <Label htmlFor="fullName" className="text-sm font-semibold text-gray-700">
                 Full Name
               </Label>
@@ -160,6 +266,7 @@ export function SignupForm() {
                 className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 required
               />
+<<<<<<< HEAD
               {formData.password && (
                 <div className="text-xs text-muted-foreground">
                   Password requirements:
@@ -182,6 +289,8 @@ export function SignupForm() {
                   </ul>
                 </div>
               )}
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
             </div>
 
             <div className="space-y-2">

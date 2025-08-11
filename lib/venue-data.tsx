@@ -46,6 +46,7 @@ export interface Booking {
   createdAt: string
 }
 
+<<<<<<< HEAD
 export interface Review {
   id: string
   userId: string
@@ -60,6 +61,8 @@ export interface Review {
   userName: string
 }
 
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
 // Mock venue data
 export const mockVenues: Venue[] = [
   {
@@ -283,7 +286,11 @@ export const mockVenues: Venue[] = [
 export const mockBookings: Booking[] = [
   {
     id: "b1",
+<<<<<<< HEAD
     userId: "mock_user_1", // Changed from "3" to avoid conflict with real users
+=======
+    userId: "3",
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     venueId: "1",
     courtId: "c1",
     date: "2024-12-20",
@@ -295,7 +302,11 @@ export const mockBookings: Booking[] = [
   },
   {
     id: "b2",
+<<<<<<< HEAD
     userId: "mock_user_1", // Changed from "3" to avoid conflict with real users
+=======
+    userId: "3",
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
     venueId: "2",
     courtId: "c4",
     date: "2024-12-18",
@@ -306,6 +317,7 @@ export const mockBookings: Booking[] = [
     createdAt: "2024-12-10T14:20:00Z",
   },
 ]
+<<<<<<< HEAD
 
 // Mock reviews data
 export const mockReviews: Review[] = [
@@ -374,3 +386,5 @@ export const saveReview = (review: Omit<Review, "id" | "createdAt">): void => {
   storedReviews.push(newReview)
   localStorage.setItem("venue_reviews", JSON.stringify(storedReviews))
 }
+=======
+>>>>>>> 2402ed90cdac1bdac3c4fabc71334b5e1b780877
