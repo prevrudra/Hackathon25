@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>
   signup: (data: SignupData) => Promise<{ success: boolean; message: string }>
   verifyOTP: (email: string, otp: string) => Promise<{ success: boolean; message: string }>
+  updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message: string }>
   logout: () => void
   isLoading: boolean
 }
@@ -152,6 +153,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, message: "Invalid OTP. Please try again." }
   }
 
+  const updateProfile = async (data: Partial<User>) => {
+    setIsLoading(true)
+
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      if (user) {
+        const updatedUser = { ...user, ...data }
+        setUser(updatedUser)
+        localStorage.setItem("quickcourt_user", JSON.stringify(updatedUser))
+        setIsLoading(false)
+        return { success: true, message: "Profile updated successfully!" }
+      }
+
+      setIsLoading(false)
+      return { success: false, message: "No user logged in" }
+    } catch (error) {
+      setIsLoading(false)
+      return { success: false, message: "Failed to update profile" }
+    }
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem("quickcourt_user")
@@ -165,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         signup,
         verifyOTP,
+        updateProfile,
         logout,
         isLoading,
       }}

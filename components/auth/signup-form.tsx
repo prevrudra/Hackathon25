@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ProfilePhotoUpload } from "@/components/ui/profile-photo-upload"
 import { useAuth, type UserRole } from "@/lib/auth-context"
 import Link from "next/link"
 
@@ -20,6 +21,7 @@ export function SignupForm() {
     confirmPassword: "",
     fullName: "",
     role: "" as UserRole | "",
+    profilePhoto: "",
   })
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -72,6 +74,7 @@ export function SignupForm() {
       password: formData.password,
       fullName: formData.fullName,
       role: formData.role as UserRole,
+      avatar: formData.profilePhoto,
     })
 
     if (result.success) {
@@ -145,6 +148,21 @@ export function SignupForm() {
                   <SelectItem value="facility_owner">🏢 Facility Owner</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Profile Photo Upload */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700">
+                Profile Photo (Optional)
+              </Label>
+              <div className="flex justify-center">
+                <ProfilePhotoUpload
+                  currentPhoto={formData.profilePhoto}
+                  userId={formData.email || "temp-" + Date.now()}
+                  onPhotoChange={(photoUrl) => handleInputChange("profilePhoto", photoUrl)}
+                  disabled={isLoading}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
