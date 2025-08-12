@@ -59,22 +59,29 @@ export function SignupFormSimple() {
       })
     }
 
-    const result = await signup({
+    // Store pending user data in localStorage
+    const pendingUser = {
       email: formData.email,
       password: formData.password,
       fullName: formData.fullName,
       role: formData.role as UserRole,
       avatar: avatarData,
-    })
+    };
+    localStorage.setItem("quickcourt_pending_user", JSON.stringify(pendingUser));
 
-    if (result.success) {
-      setSuccess(result.message)
-      setTimeout(() => {
-        router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
-      }, 2000)
-    } else {
-      setError(result.message)
-    }
+    // Send OTP email
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await fetch("/api/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: formData.email, otp }),
+    });
+    localStorage.setItem("quickcourt_signup_otp", otp);
+
+    setSuccess("OTP sent! Please verify your email.");
+    setTimeout(() => {
+      router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
+    }, 2000);
   }
 
   const handleInputChange = (field: string, value: string) => {

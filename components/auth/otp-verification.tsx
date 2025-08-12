@@ -20,22 +20,40 @@ export function OTPVerification() {
   const email = searchParams.get("email") || ""
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (otp.length !== 6) {
-      setError("Please enter a 6-digit OTP")
-      return
+      setError("Please enter a 6-digit OTP");
+      return;
     }
 
-    const result = await verifyOTP(email, otp)
+    // Check OTP from localStorage (demo only)
+    const storedOtp = localStorage.getItem("quickcourt_signup_otp");
+    if (otp !== storedOtp) {
+      setError("Invalid OTP. Please try again.");
+      return;
+    }
 
+    // Get pending user data
+    const pendingUser = localStorage.getItem("quickcourt_pending_user");
+    if (!pendingUser) {
+      setError("No pending signup found. Please sign up again.");
+      return;
+    }
+    const userData = JSON.parse(pendingUser);
+
+    // Create account using signup (calls backend if implemented)
+    const result = await verifyOTP(email, otp);
     if (result.success) {
-      router.push("/dashboard")
+      // Clean up
+      localStorage.removeItem("quickcourt_signup_otp");
+      localStorage.removeItem("quickcourt_pending_user");
+      router.push("/dashboard");
     } else {
-      setError(result.message)
+      setError(result.message);
     }
-  }
+  };
 
   const handleOtpChange = (value: string) => {
     // Only allow numbers and limit to 6 digits
