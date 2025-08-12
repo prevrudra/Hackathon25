@@ -4,7 +4,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 items-center justify-center p-12">
+      <div className="hidden lg:flex bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 items-center justify-center p-12">
         <div className="text-center text-white max-w-md">
           <div className="mb-8">
             <img 
@@ -28,7 +28,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right side - Signup Form */}
-      <div className="flex items-center justify-center p-8 bg-gray-50">
+      <div className="flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="w-full max-w-md">
           <SignupFormSimple />
         </div>

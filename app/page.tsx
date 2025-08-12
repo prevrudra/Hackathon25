@@ -15,9 +15,9 @@ export default function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-2 text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -26,10 +26,10 @@ export default function HomePage() {
 
   // Header for logged-in users
   const LoggedInHeader = () => (
-    <header className="bg-white border-b">
+    <header className="bg-white/80 backdrop-blur-sm border-b border-indigo-100 shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">QuickCourt</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">
@@ -42,12 +42,12 @@ export default function HomePage() {
                 <p className="text-sm font-medium">{user?.fullName}</p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
-              <Badge variant="secondary" className="hidden md:inline-flex">
+              <Badge variant="secondary" className="hidden md:inline-flex bg-indigo-100 text-indigo-700">
                 {user?.role === "facility_owner" ? "Facility Owner" : "User"}
               </Badge>
             </div>
             <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="border-indigo-200 hover:bg-indigo-50">
                 <Link href="/profile">Profile</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
@@ -65,15 +65,15 @@ export default function HomePage() {
 
   // Header for guests
   const GuestHeader = () => (
-    <header className="bg-white border-b">
+    <header className="bg-white/80 backdrop-blur-sm border-b border-indigo-100 shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">QuickCourt</h1>
           <div className="flex gap-2">
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className="hover:bg-indigo-50 hover:text-indigo-600">
               <Link href="/login">Sign In</Link>
             </Button>
-            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
               <Link href="/signup">Sign Up</Link>
             </Button>
           </div>
@@ -83,18 +83,18 @@ export default function HomePage() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Dynamic Header */}
       {user ? <LoggedInHeader /> : <GuestHeader />}
 
       {/* Welcome Section for Logged-in Users */}
       {user && (
-        <section className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-8">
+        <section className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white py-8">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={user.avatar || ""} alt={user.fullName} />
-                <AvatarFallback className="text-xl bg-white/20 text-white">
+                <AvatarFallback className="text-xl bg-white/20 text-white backdrop-blur-sm">
                   {user.fullName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

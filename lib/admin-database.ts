@@ -298,3 +298,140 @@ export async function unbanUser(userId: string): Promise<boolean> {
     return false
   }
 }
+
+export async function getDetailedReports() {
+  try {
+    // Get detailed booking reports by month
+    const monthlyBookings = executeQuery(`
+      SELECT 
+        strftime('%Y-%m', booking_date) as month,
+        COUNT(*) as total_bookings,
+        SUM(total_amount) as total_revenue,
+        AVG(total_amount) as avg_booking_value,
+        COUNT(DISTINCT user_id) as unique_users
+      FROM bookings 
+      WHERE booking_date >= DATE('now', '-12 months')
+      GROUP BY strftime('%Y-%m', booking_date)
+      ORDER BY month DESC
+    `)
+
+    // Get venue performance
+    const venuePerformance = executeQuery(`
+      SELECT 
+        v.name as venue_name,
+        v.address,
+        v.city,
+        COUNT(b.id) as total_bookings,
+        SUM(b.total_amount) as total_revenue,
+        AVG(b.total_amount) as avg_booking_value,
+        COUNT(DISTINCT b.user_id) as unique_customers
+      FROM venues v
+      LEFT JOIN bookings b ON v.id = b.venue_id
+      GROUP BY v.id, v.name, v.address, v.city
+      ORDER BY total_revenue DESC
+    `)
+
+    // Get user activity patterns
+    const userActivityPatterns = executeQuery(`
+      SELECT 
+        CASE 
+          WHEN COUNT(b.id) >= 10 THEN 'High Activity'
+          WHEN COUNT(b.id) >= 5 THEN 'Medium Activity'
+          WHEN COUNT(b.id) >= 1 THEN 'Low Activity'
+          ELSE 'No Activity'
+        END as activity_level,
+        COUNT(u.id) as user_count,
+        AVG(total_spent.amount) as avg_spent
+      FROM users u
+      LEFT JOIN bookings b ON u.id = b.user_id
+      LEFT JOIN (
+        SELECT user_id, SUM(total_amount) as amount 
+        FROM bookings 
+        GROUP BY user_id
+      ) total_spent ON u.id = total_spent.user_id
+      WHERE u.role = 'user'
+      GROUP BY activity_level
+      ORDER BY 
+        CASE activity_level
+          WHEN 'High Activity' THEN 1
+          WHEN 'Medium Activity' THEN 2
+          WHEN 'Low Activity' THEN 3
+          WHEN 'No Activity' THEN 4
+        END
+    `)
+
+    // Get peak booking times
+    const peakBookingTimes = executeQuery(`
+      SELECT 
+        CASE 
+          WHEN CAST(strftime('%H', start_time) AS INTEGER) < 6 THEN 'Early Morning (00-06)'
+          WHEN CAST(strftime('%H', start_time) AS INTEGER) < 12 THEN 'Morning (06-12)'
+          WHEN CAST(strftime('%H', start_time) AS INTEGER) < 18 THEN 'Afternoon (12-18)'
+          ELSE 'Evening (18-24)'
+        END as time_period,
+        COUNT(*) as booking_count,
+        ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM bookings), 2) as percentage
+      FROM bookings
+      GROUP BY time_period
+      ORDER BY booking_count DESC
+    `)
+
+    // Get sport-wise revenue breakdown
+    const sportRevenue = executeQuery(`
+      SELECT 
+        c.sport_type,
+        COUNT(b.id) as total_bookings,
+        SUM(b.total_amount) as total_revenue,
+        AVG(b.total_amount) as avg_booking_value,
+        ROUND(SUM(b.total_amount) * 100.0 / (SELECT SUM(total_amount) FROM bookings), 2) as revenue_percentage
+      FROM courts c
+      JOIN bookings b ON c.id = b.court_id
+      GROUP BY c.sport_type
+      ORDER BY total_revenue DESC
+    `)
+
+    return {
+      monthlyBookings: monthlyBookings.map(row => ({
+        month: row.month,
+        totalBookings: row.total_bookings,
+        totalRevenue: Math.round((row.total_revenue || 0) * 100),
+        avgBookingValue: Math.round((row.avg_booking_value || 0) * 100),
+        uniqueUsers: row.unique_users
+      })),
+      venuePerformance: venuePerformance.map(row => ({
+        venueName: row.venue_name,
+        location: `${row.address}, ${row.city}`,
+        totalBookings: row.total_bookings || 0,
+        totalRevenue: Math.round((row.total_revenue || 0) * 100),
+        avgBookingValue: Math.round((row.avg_booking_value || 0) * 100),
+        uniqueCustomers: row.unique_customers || 0
+      })),
+      userActivityPatterns: userActivityPatterns.map(row => ({
+        activityLevel: row.activity_level,
+        userCount: row.user_count,
+        avgSpent: Math.round((row.avg_spent || 0) * 100)
+      })),
+      peakBookingTimes: peakBookingTimes.map(row => ({
+        timePeriod: row.time_period,
+        bookingCount: row.booking_count,
+        percentage: row.percentage
+      })),
+      sportRevenue: sportRevenue.map(row => ({
+        sportType: row.sport_type,
+        totalBookings: row.total_bookings,
+        totalRevenue: Math.round((row.total_revenue || 0) * 100),
+        avgBookingValue: Math.round((row.avg_booking_value || 0) * 100),
+        revenuePercentage: row.revenue_percentage
+      }))
+    }
+  } catch (error) {
+    console.error('Error getting detailed reports:', error)
+    return {
+      monthlyBookings: [],
+      venuePerformance: [],
+      userActivityPatterns: [],
+      peakBookingTimes: [],
+      sportRevenue: []
+    }
+  }
+}

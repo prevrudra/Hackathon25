@@ -120,12 +120,12 @@ export function SignupFormSimple() {
   }
 
   return (
-    <Card className="w-full shadow-lg border-0">
+    <Card className="w-full shadow-xl border-0 bg-white/80 backdrop-blur-sm border border-white/20">
       <CardHeader className="text-center space-y-2 pb-4">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
           <span className="text-xl font-bold text-white">Q</span>
         </div>
-        <CardTitle className="text-xl font-bold text-gray-900">QUICKCOURT</CardTitle>
+        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">QUICKCOURT</CardTitle>
         <p className="text-lg font-semibold text-gray-700">SIGN UP</p>
       </CardHeader>
       

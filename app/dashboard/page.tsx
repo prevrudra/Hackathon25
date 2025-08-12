@@ -31,9 +31,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-2 text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -54,13 +54,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-indigo-100 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">QuickCourt</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">Welcome, {user.fullName}</span>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button variant="outline" onClick={handleLogout} className="border-indigo-200 hover:bg-indigo-50">
               Logout
             </Button>
           </div>
@@ -69,10 +69,10 @@ export default function DashboardPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.fullName}!</h2>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">Welcome back, {user.fullName}!</h2>
           <p className="text-gray-600">
             You're logged in as:{" "}
-            <span className="font-medium capitalize text-blue-600">{user.role.replace("_", " ")}</span>
+            <span className="font-medium capitalize text-indigo-600">{user.role.replace("_", " ")}</span>
           </p>
         </div>
 

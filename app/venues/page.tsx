@@ -69,15 +69,15 @@ export default function VenuesPage() {
   }, [filters])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-indigo-100 shadow-sm">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Sports Venues</h1>
-              <p className="text-gray-600">Find and book the perfect court for your game</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Sports Venues</h1>
+              <p className="text-gray-600 mt-1">Discover and book premium sports facilities</p>
             </div>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="border-indigo-200 hover:bg-indigo-50">
               <Link href="/dashboard">Back to Dashboard</Link>
             </Button>
           </div>
