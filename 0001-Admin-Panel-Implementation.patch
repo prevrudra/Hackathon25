@@ -1,0 +1,1383 @@
+From aadb37a9e1e7c48d9fa182de5896b1d98a0b85ea Mon Sep 17 00:00:00 2001
+From: Rudra Patel <patelrudra8999@gmail.com>
+Date: Tue, 12 Aug 2025 00:45:12 +0530
+Subject: [PATCH] Admin Panel Implementation
+
+---
+ app/api/upload/profile-photo/route.ts        |  65 ++++
+ app/page.tsx                                 | 296 +++++++++++++++----
+ app/profile/page.tsx                         |  53 +++-
+ components/auth/signup-form.tsx              |  18 ++
+ components/ui/profile-photo-upload.tsx       | 208 +++++++++++++
+ lib/auth-context.tsx                         |  25 ++
+ lib/image-utils.ts                           | 101 +++++++
+ public/uploads/profiles/4-1754939074267.jpeg | Bin 0 -> 6709 bytes
+ public/uploads/profiles/4-1754939228343.jpeg | Bin 0 -> 6347 bytes
+ public/uploads/profiles/4-1754939446924.jpeg | Bin 0 -> 6347 bytes
+ public/uploads/profiles/README.md            |  12 +
+ 11 files changed, 703 insertions(+), 75 deletions(-)
+ create mode 100644 app/api/upload/profile-photo/route.ts
+ create mode 100644 components/ui/profile-photo-upload.tsx
+ create mode 100644 lib/image-utils.ts
+ create mode 100644 public/uploads/profiles/4-1754939074267.jpeg
+ create mode 100644 public/uploads/profiles/4-1754939228343.jpeg
+ create mode 100644 public/uploads/profiles/4-1754939446924.jpeg
+ create mode 100644 public/uploads/profiles/README.md
+
+diff --git a/app/api/upload/profile-photo/route.ts b/app/api/upload/profile-photo/route.ts
+new file mode 100644
+index 0000000..7ef1949
+--- /dev/null
++++ b/app/api/upload/profile-photo/route.ts
+@@ -0,0 +1,65 @@
++import { NextRequest, NextResponse } from 'next/server'
++import { writeFile, mkdir } from 'fs/promises'
++import path from 'path'
++import { existsSync } from 'fs'
++
++export async function POST(request: NextRequest) {
++  try {
++    const formData = await request.formData()
++    const file = formData.get('file') as File | null
++    const userId = formData.get('userId') as string | null
++
++    if (!file) {
++      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
++    }
++
++    if (!userId) {
++      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
++    }
++
++    // Validate file type
++    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
++    if (!allowedTypes.includes(file.type)) {
++      return NextResponse.json({ 
++        error: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.' 
++      }, { status: 400 })
++    }
++
++    // Validate file size (1MB limit)
++    const maxSize = 1 * 1024 * 1024 // 1MB
++    if (file.size > maxSize) {
++      return NextResponse.json({ 
++        error: 'File too large. Maximum size is 1MB.' 
++      }, { status: 400 })
++    }
++
++    const bytes = await file.arrayBuffer()
++    const buffer = Buffer.from(bytes)
++
++    // Create uploads directory if it doesn't exist
++    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'profiles')
++    if (!existsSync(uploadsDir)) {
++      await mkdir(uploadsDir, { recursive: true })
++    }
++
++    // Generate unique filename
++    const fileExtension = path.extname(file.name)
++    const fileName = `${userId}-${Date.now()}${fileExtension}`
++    const filePath = path.join(uploadsDir, fileName)
++
++    // Write file to disk
++    await writeFile(filePath, buffer)
++
++    // Return the URL path
++    const fileUrl = `/uploads/profiles/${fileName}`
++    
++    return NextResponse.json({ 
++      message: 'File uploaded successfully',
++      url: fileUrl
++    })
++
++  } catch (error) {
++    console.error('Error uploading file:', error)
++    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
++  }
++}
+diff --git a/app/page.tsx b/app/page.tsx
+index ee1f49d..88a678b 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -1,24 +1,17 @@
+ "use client"
+ 
+-import { useEffect } from "react"
+-import { useRouter } from "next/navigation"
+ import { useAuth } from "@/lib/auth-context"
+ import { Button } from "@/components/ui/button"
+-import { Card, CardContent } from "@/components/ui/card"
++import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+ import { Input } from "@/components/ui/input"
++import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
++import { Badge } from "@/components/ui/badge"
+ import Link from "next/link"
+ import { mockVenues } from "@/lib/venue-data"
+ import { VenueCard } from "@/components/venues/venue-card"
+ 
+ export default function HomePage() {
+-  const { user, isLoading } = useAuth()
+-  const router = useRouter()
+-
+-  useEffect(() => {
+-    if (!isLoading && user) {
+-      router.push("/dashboard")
+-    }
+-  }, [user, isLoading, router])
++  const { user, isLoading, logout } = useAuth()
+ 
+   if (isLoading) {
+     return (
+@@ -31,67 +24,181 @@ export default function HomePage() {
+     )
+   }
+ 
+-  if (user) {
+-    return null // Will redirect to dashboard
+-  }
+-
+-  return (
+-    <div className="min-h-screen bg-gray-50">
+-      {/* Header */}
+-      <header className="bg-white border-b">
+-        <div className="container mx-auto px-4 py-4">
+-          <div className="flex justify-between items-center">
+-            <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
++  // Header for logged-in users
++  const LoggedInHeader = () => (
++    <header className="bg-white border-b">
++      <div className="container mx-auto px-4 py-4">
++        <div className="flex justify-between items-center">
++          <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
++          <div className="flex items-center gap-4">
++            <div className="flex items-center gap-3">
++              <Avatar className="h-8 w-8">
++                <AvatarImage src={user?.avatar || ""} alt={user?.fullName || ""} />
++                <AvatarFallback className="text-sm bg-gradient-to-br from-blue-500 to-purple-600 text-white">
++                  {user?.fullName?.charAt(0).toUpperCase() || "U"}
++                </AvatarFallback>
++              </Avatar>
++              <div className="hidden md:block">
++                <p className="text-sm font-medium">{user?.fullName}</p>
++                <p className="text-xs text-muted-foreground">{user?.email}</p>
++              </div>
++              <Badge variant="secondary" className="hidden md:inline-flex">
++                {user?.role === "facility_owner" ? "Facility Owner" : "User"}
++              </Badge>
++            </div>
+             <div className="flex gap-2">
+-              <Button asChild variant="ghost">
+-                <Link href="/login">Sign In</Link>
++              <Button asChild variant="outline" size="sm">
++                <Link href="/profile">Profile</Link>
+               </Button>
+-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+-                <Link href="/signup">Sign Up</Link>
++              <Button asChild variant="outline" size="sm">
++                <Link href="/dashboard">Dashboard</Link>
++              </Button>
++              <Button onClick={logout} variant="ghost" size="sm">
++                Logout
+               </Button>
+             </div>
+           </div>
+         </div>
+-      </header>
++      </div>
++    </header>
++  )
+ 
+-      {/* Hero Section */}
+-      <section className="bg-white py-12">
+-        <div className="container mx-auto px-4 text-center">
+-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Book Your Favorite Sports Venue</h2>
+-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+-            Find and book badminton courts, football turfs, and more near you
+-          </p>
++  // Header for guests
++  const GuestHeader = () => (
++    <header className="bg-white border-b">
++      <div className="container mx-auto px-4 py-4">
++        <div className="flex justify-between items-center">
++          <h1 className="text-2xl font-bold text-blue-600">QuickCourt</h1>
++          <div className="flex gap-2">
++            <Button asChild variant="ghost">
++              <Link href="/login">Sign In</Link>
++            </Button>
++            <Button asChild className="bg-blue-600 hover:bg-blue-700">
++              <Link href="/signup">Sign Up</Link>
++            </Button>
++          </div>
++        </div>
++      </div>
++    </header>
++  )
+ 
+-          {/* Search Bar */}
+-          <div className="max-w-md mx-auto mb-8">
+-            <div className="relative">
+-              <Input placeholder="Search for venues..." className="pl-10 h-12" />
+-              <svg
+-                className="absolute left-3 top-3 h-6 w-6 text-gray-400"
+-                fill="none"
+-                stroke="currentColor"
+-                viewBox="0 0 24 24"
+-              >
+-                <path
+-                  strokeLinecap="round"
+-                  strokeLinejoin="round"
+-                  strokeWidth={2}
+-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+-                />
+-              </svg>
++  return (
++    <div className="min-h-screen bg-gray-50">
++      {/* Dynamic Header */}
++      {user ? <LoggedInHeader /> : <GuestHeader />}
++
++      {/* Welcome Section for Logged-in Users */}
++      {user && (
++        <section className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-8">
++          <div className="container mx-auto px-4">
++            <div className="flex items-center gap-4">
++              <Avatar className="h-16 w-16">
++                <AvatarImage src={user.avatar || ""} alt={user.fullName} />
++                <AvatarFallback className="text-xl bg-white/20 text-white">
++                  {user.fullName.charAt(0).toUpperCase()}
++                </AvatarFallback>
++              </Avatar>
++              <div>
++                <h2 className="text-3xl font-bold">Welcome back, {user.fullName}!</h2>
++                <p className="text-blue-100 text-lg">Ready to book your next sports session?</p>
++                <div className="flex gap-4 mt-3">
++                  <Button asChild variant="secondary" size="sm">
++                    <Link href="/venues">Browse Venues</Link>
++                  </Button>
++                  <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-blue-600">
++                    <Link href="/my-bookings">My Bookings</Link>
++                  </Button>
++                  {user.role === "facility_owner" && (
++                    <Button asChild variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-blue-600">
++                      <Link href="/owner/dashboard">Owner Dashboard</Link>
++                    </Button>
++                  )}
++                </div>
++              </div>
+             </div>
+           </div>
++        </section>
++      )}
+ 
+-          <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+-            <Link href="/venues">Explore Venues</Link>
+-          </Button>
+-        </div>
+-      </section>
++      {/* Hero Section for Guests */}
++      {!user && (
++        <section className="bg-white py-12">
++          <div className="container mx-auto px-4 text-center">
++            <h2 className="text-4xl font-bold text-gray-900 mb-4">Book Your Favorite Sports Venue</h2>
++            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
++              Find and book badminton courts, football turfs, and more near you
++            </p>
++
++            {/* Search Bar */}
++            <div className="max-w-md mx-auto mb-8">
++              <div className="relative">
++                <Input placeholder="Search for venues..." className="pl-10 h-12" />
++                <svg
++                  className="absolute left-3 top-3 h-6 w-6 text-gray-400"
++                  fill="none"
++                  stroke="currentColor"
++                  viewBox="0 0 24 24"
++                >
++                  <path
++                    strokeLinecap="round"
++                    strokeLinejoin="round"
++                    strokeWidth={2}
++                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
++                  />
++                </svg>
++              </div>
++            </div>
++
++            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
++              <Link href="/venues">Explore Venues</Link>
++            </Button>
++          </div>
++        </section>
++      )}
++
++      {/* Quick Stats for Logged-in Users */}
++      {user && (
++        <section className="py-8">
++          <div className="container mx-auto px-4">
++            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
++              <Card>
++                <CardHeader className="pb-2">
++                  <CardTitle className="text-sm font-medium text-muted-foreground">Recent Bookings</CardTitle>
++                </CardHeader>
++                <CardContent>
++                  <div className="text-2xl font-bold text-blue-600">5</div>
++                  <p className="text-sm text-muted-foreground">This month</p>
++                </CardContent>
++              </Card>
++              <Card>
++                <CardHeader className="pb-2">
++                  <CardTitle className="text-sm font-medium text-muted-foreground">Favorite Sport</CardTitle>
++                </CardHeader>
++                <CardContent>
++                  <div className="text-2xl font-bold text-green-600">🏸 Badminton</div>
++                  <p className="text-sm text-muted-foreground">Most played</p>
++                </CardContent>
++              </Card>
++              <Card>
++                <CardHeader className="pb-2">
++                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
++                </CardHeader>
++                <CardContent>
++                  <div className="text-2xl font-bold text-purple-600">₹2,450</div>
++                  <p className="text-sm text-muted-foreground">This year</p>
++                </CardContent>
++              </Card>
++            </div>
++          </div>
++        </section>
++      )}
+ 
+       {/* Popular Sports */}
+-      <section className="py-12">
++      <section className={user ? "py-8" : "py-12"}>
+         <div className="container mx-auto px-4">
+-          <h3 className="text-2xl font-bold text-center mb-8">Popular Sports</h3>
++          <h3 className="text-2xl font-bold text-center mb-8">
++            {user ? "Quick Sport Selection" : "Popular Sports"}
++          </h3>
+           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+             {[
+               { name: "Badminton", icon: "🏸" },
+@@ -101,7 +208,10 @@ export default function HomePage() {
+               { name: "Basketball", icon: "🏀" },
+               { name: "Cricket", icon: "🏏" },
+             ].map((sport) => (
+-              <Card key={sport.name} className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer">
++              <Card 
++                key={sport.name} 
++                className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-blue-500"
++              >
+                 <CardContent className="p-0">
+                   <div className="text-3xl mb-2">{sport.icon}</div>
+                   <p className="font-medium text-sm">{sport.name}</p>
+@@ -113,10 +223,12 @@ export default function HomePage() {
+       </section>
+ 
+       {/* Popular Venues */}
+-      <section className="py-12 bg-white">
++      <section className={`${user ? "py-8" : "py-12"} bg-white`}>
+         <div className="container mx-auto px-4">
+           <div className="flex justify-between items-center mb-8">
+-            <h3 className="text-2xl font-bold">Popular Venues</h3>
++            <h3 className="text-2xl font-bold">
++              {user ? "Recommended Venues" : "Popular Venues"}
++            </h3>
+             <Button asChild variant="outline">
+               <Link href="/venues">View All</Link>
+             </Button>
+@@ -129,6 +241,68 @@ export default function HomePage() {
+         </div>
+       </section>
+ 
++      {/* Additional Section for Logged-in Users */}
++      {user && (
++        <section className="py-8">
++          <div className="container mx-auto px-4">
++            <div className="grid md:grid-cols-2 gap-6">
++              <Card>
++                <CardHeader>
++                  <CardTitle className="flex items-center gap-2">
++                    📅 Quick Actions
++                  </CardTitle>
++                </CardHeader>
++                <CardContent className="space-y-3">
++                  <Button asChild className="w-full justify-start" variant="outline">
++                    <Link href="/venues">
++                      🔍 Find Venues
++                    </Link>
++                  </Button>
++                  <Button asChild className="w-full justify-start" variant="outline">
++                    <Link href="/my-bookings">
++                      📋 View My Bookings
++                    </Link>
++                  </Button>
++                  <Button asChild className="w-full justify-start" variant="outline">
++                    <Link href="/profile">
++                      ⚙️ Account Settings
++                    </Link>
++                  </Button>
++                </CardContent>
++              </Card>
++              
++              <Card>
++                <CardHeader>
++                  <CardTitle className="flex items-center gap-2">
++                    🎯 Your Activity
++                  </CardTitle>
++                </CardHeader>
++                <CardContent>
++                  <div className="space-y-4">
++                    <div className="flex justify-between items-center">
++                      <span className="text-sm text-muted-foreground">Account Status</span>
++                      <Badge variant={user.isVerified ? "default" : "secondary"}>
++                        {user.isVerified ? "Verified" : "Unverified"}
++                      </Badge>
++                    </div>
++                    <div className="flex justify-between items-center">
++                      <span className="text-sm text-muted-foreground">Member Since</span>
++                      <span className="text-sm font-medium">2024</span>
++                    </div>
++                    <div className="flex justify-between items-center">
++                      <span className="text-sm text-muted-foreground">User Type</span>
++                      <Badge variant="outline">
++                        {user.role === "facility_owner" ? "Facility Owner" : "Player"}
++                      </Badge>
++                    </div>
++                  </div>
++                </CardContent>
++              </Card>
++            </div>
++          </div>
++        </section>
++      )}
++
+       {/* Footer */}
+       <footer className="bg-gray-900 text-white py-8">
+         <div className="container mx-auto px-4 text-center">
+diff --git a/app/profile/page.tsx b/app/profile/page.tsx
+index c9aab1e..7a8483d 100644
+--- a/app/profile/page.tsx
++++ b/app/profile/page.tsx
+@@ -11,11 +11,13 @@ import { Label } from "@/components/ui/label"
+ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+ import { Alert, AlertDescription } from "@/components/ui/alert"
+ import { Badge } from "@/components/ui/badge"
++import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
++import { ProfilePhotoUpload } from "@/components/ui/profile-photo-upload"
+ import Link from "next/link"
+ 
+ export default function ProfilePage() {
+-  const { user, isLoading, logout } = useAuth()
++  const { user, isLoading, logout, updateProfile } = useAuth()
+   const router = useRouter()
+ 
+   const [formData, setFormData] = useState({
+@@ -77,9 +79,16 @@ export default function ProfilePage() {
+     setMessage("")
+ 
+     try {
+-      // Simulate API call - In real app, this would update the user profile
+-      await new Promise((resolve) => setTimeout(resolve, 1000))
+-      setMessage("Profile updated successfully!")
++      const result = await updateProfile({
++        fullName: formData.fullName,
++        avatar: formData.avatar,
++      })
++      
++      if (result.success) {
++        setMessage(result.message)
++      } else {
++        setMessage(result.message)
++      }
+     } catch (error) {
+       setMessage("Failed to update profile. Please try again.")
+     } finally {
+@@ -173,6 +182,20 @@ export default function ProfilePage() {
+     setFormData((prev) => ({ ...prev, [field]: value }))
+   }
+ 
++  const handleAvatarChange = async (photoUrl: string) => {
++    // Update form data
++    handleInputChange("avatar", photoUrl)
++    
++    // Immediately update the user context so the avatar shows up right away
++    if (user) {
++      try {
++        await updateProfile({ avatar: photoUrl })
++      } catch (error) {
++        console.error("Failed to update avatar immediately:", error)
++      }
++    }
++  }
++
+   return (
+     <div className="min-h-screen bg-gray-50">
+       <header className="bg-white shadow-sm border-b">
+@@ -198,9 +221,12 @@ export default function ProfilePage() {
+             </CardHeader>
+             <CardContent>
+               <div className="flex items-center gap-4 mb-4">
+-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+-                  <span className="text-2xl font-semibold text-primary">{user.fullName.charAt(0).toUpperCase()}</span>
+-                </div>
++                <Avatar className="w-16 h-16">
++                  <AvatarImage src={user.avatar || ""} alt={user.fullName} />
++                  <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
++                    {user.fullName.charAt(0).toUpperCase()}
++                  </AvatarFallback>
++                </Avatar>
+                 <div>
+                   <h3 className="text-xl font-semibold">{user.fullName}</h3>
+                   <p className="text-muted-foreground">{user.email}</p>
+@@ -253,13 +279,12 @@ export default function ProfilePage() {
+                 </div>
+ 
+                 <div className="space-y-2">
+-                  <Label htmlFor="avatar">Avatar URL (Optional)</Label>
+-                  <Input
+-                    id="avatar"
+-                    type="url"
+-                    placeholder="https://example.com/avatar.jpg"
+-                    value={formData.avatar}
+-                    onChange={(e) => handleInputChange("avatar", e.target.value)}
++                  <Label>Profile Photo</Label>
++                  <ProfilePhotoUpload
++                    currentPhoto={formData.avatar}
++                    userId={user?.id || ""}
++                    onPhotoChange={handleAvatarChange}
++                    disabled={isUpdating}
+                   />
+                 </div>
+ 
+diff --git a/components/auth/signup-form.tsx b/components/auth/signup-form.tsx
+index 1eee443..83f83bc 100644
+--- a/components/auth/signup-form.tsx
++++ b/components/auth/signup-form.tsx
+@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
+ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+ import { Alert, AlertDescription } from "@/components/ui/alert"
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
++import { ProfilePhotoUpload } from "@/components/ui/profile-photo-upload"
+ import { useAuth, type UserRole } from "@/lib/auth-context"
+ import Link from "next/link"
+ 
+@@ -20,6 +21,7 @@ export function SignupForm() {
+     confirmPassword: "",
+     fullName: "",
+     role: "" as UserRole | "",
++    profilePhoto: "",
+   })
+   const [error, setError] = useState("")
+   const [success, setSuccess] = useState("")
+@@ -72,6 +74,7 @@ export function SignupForm() {
+       password: formData.password,
+       fullName: formData.fullName,
+       role: formData.role as UserRole,
++      avatar: formData.profilePhoto,
+     })
+ 
+     if (result.success) {
+@@ -147,6 +150,21 @@ export function SignupForm() {
+               </Select>
+             </div>
+ 
++            {/* Profile Photo Upload */}
++            <div className="space-y-2">
++              <Label className="text-sm font-semibold text-gray-700">
++                Profile Photo (Optional)
++              </Label>
++              <div className="flex justify-center">
++                <ProfilePhotoUpload
++                  currentPhoto={formData.profilePhoto}
++                  userId={formData.email || "temp-" + Date.now()}
++                  onPhotoChange={(photoUrl) => handleInputChange("profilePhoto", photoUrl)}
++                  disabled={isLoading}
++                />
++              </div>
++            </div>
++
+             <div className="space-y-2">
+               <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                 Password
+diff --git a/components/ui/profile-photo-upload.tsx b/components/ui/profile-photo-upload.tsx
+new file mode 100644
+index 0000000..5a6a68c
+--- /dev/null
++++ b/components/ui/profile-photo-upload.tsx
+@@ -0,0 +1,208 @@
++"use client"
++
++import React, { useState, useRef } from 'react'
++import { Button } from '@/components/ui/button'
++import { Label } from '@/components/ui/label'
++import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
++import { Camera, Upload, X } from 'lucide-react'
++import { Alert, AlertDescription } from '@/components/ui/alert'
++import { validateImageFile, createImagePreview, resizeImage } from '@/lib/image-utils'
++
++interface ProfilePhotoUploadProps {
++  currentPhoto?: string
++  userId: string
++  onPhotoChange?: (photoUrl: string) => void
++  className?: string
++  disabled?: boolean
++}
++
++export function ProfilePhotoUpload({ 
++  currentPhoto, 
++  userId, 
++  onPhotoChange, 
++  className,
++  disabled = false 
++}: ProfilePhotoUploadProps) {
++  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhoto || null)
++  const [isUploading, setIsUploading] = useState(false)
++  const [error, setError] = useState<string>("")
++  const fileInputRef = useRef<HTMLInputElement>(null)
++
++  const getInitials = (userId: string) => {
++    return userId.slice(0, 2).toUpperCase()
++  }
++
++  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
++    const file = event.target.files?.[0]
++    if (!file) return
++
++    // Reset error
++    setError("")
++
++    // Validate file
++    const validation = validateImageFile(file)
++    if (!validation.valid) {
++      setError(validation.error || 'Invalid file')
++      return
++    }
++
++    try {
++      // Show preview
++      const previewUrl = await createImagePreview(file)
++      setPreviewUrl(previewUrl)
++
++      // Resize and compress image
++      const resizedBlob = await resizeImage(file, {
++        maxWidth: 400,
++        maxHeight: 400,
++        quality: 0.8
++      })
++
++      // Convert blob to file
++      const resizedFile = new File([resizedBlob], file.name, {
++        type: 'image/jpeg',
++        lastModified: Date.now()
++      })
++
++      // Upload resized file
++      await uploadFile(resizedFile)
++    } catch (error) {
++      console.error('Error processing image:', error)
++      setError('Failed to process image. Please try again.')
++    }
++  }
++
++  const uploadFile = async (file: File) => {
++    setIsUploading(true)
++    
++    try {
++      const formData = new FormData()
++      formData.append('file', file)
++      formData.append('userId', userId)
++
++      const response = await fetch('/api/upload/profile-photo', {
++        method: 'POST',
++        body: formData,
++      })
++
++      const result = await response.json()
++
++      if (!response.ok) {
++        throw new Error(result.error || 'Upload failed')
++      }
++
++      // Call callback with new photo URL
++      if (onPhotoChange) {
++        onPhotoChange(result.url)
++      }
++
++    } catch (error) {
++      console.error('Upload error:', error)
++      setError(error instanceof Error ? error.message : 'Failed to upload photo')
++      // Reset preview on error
++      setPreviewUrl(currentPhoto || null)
++    } finally {
++      setIsUploading(false)
++    }
++  }
++
++  const handleRemovePhoto = () => {
++    setPreviewUrl(null)
++    if (onPhotoChange) {
++      onPhotoChange('')
++    }
++    if (fileInputRef.current) {
++      fileInputRef.current.value = ''
++    }
++  }
++
++  const triggerFileInput = () => {
++    if (!disabled) {
++      fileInputRef.current?.click()
++    }
++  }
++
++  return (
++    <div className={`space-y-4 ${className}`}>
++      <div className="flex flex-col items-center space-y-4">
++        {/* Avatar Preview */}
++        <div className="relative">
++          <Avatar className="h-24 w-24 border-4 border-gray-200">
++            <AvatarImage src={previewUrl || undefined} alt="Profile photo" />
++            <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
++              {getInitials(userId)}
++            </AvatarFallback>
++          </Avatar>
++          
++          {/* Upload overlay button */}
++          <button
++            type="button"
++            onClick={triggerFileInput}
++            disabled={disabled || isUploading}
++            className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full opacity-0 hover:opacity-100 transition-opacity duration-200 disabled:cursor-not-allowed"
++          >
++            {isUploading ? (
++              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
++            ) : (
++              <Camera className="h-6 w-6" />
++            )}
++          </button>
++        </div>
++
++        {/* Action Buttons */}
++        <div className="flex gap-2">
++          <Button
++            type="button"
++            variant="outline"
++            size="sm"
++            onClick={triggerFileInput}
++            disabled={disabled || isUploading}
++          >
++            <Upload className="h-4 w-4 mr-2" />
++            {isUploading ? 'Uploading...' : 'Upload Photo'}
++          </Button>
++          
++          {previewUrl && (
++            <Button
++              type="button"
++              variant="outline"
++              size="sm"
++              onClick={handleRemovePhoto}
++              disabled={disabled || isUploading}
++            >
++              <X className="h-4 w-4 mr-2" />
++              Remove
++            </Button>
++          )}
++        </div>
++
++        {/* Hidden file input */}
++        <input
++          ref={fileInputRef}
++          type="file"
++          accept="image/jpeg,image/jpg,image/png,image/webp"
++          onChange={handleFileSelect}
++          className="hidden"
++          disabled={disabled}
++        />
++      </div>
++
++      {/* Error Message */}
++      {error && (
++        <Alert variant="destructive">
++          <AlertDescription>{error}</AlertDescription>
++        </Alert>
++      )}
++
++      {/* Help Text */}
++      <div className="text-center">
++        <p className="text-sm text-muted-foreground">
++          Supported formats: JPEG, PNG, WebP (max 1MB)
++        </p>
++        <p className="text-xs text-muted-foreground mt-1">
++          Images will be automatically resized and optimized
++        </p>
++      </div>
++    </div>
++  )
++}
+diff --git a/lib/auth-context.tsx b/lib/auth-context.tsx
+index a3efca0..e3efe0b 100644
+--- a/lib/auth-context.tsx
++++ b/lib/auth-context.tsx
+@@ -19,6 +19,7 @@ interface AuthContextType {
+   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>
+   signup: (data: SignupData) => Promise<{ success: boolean; message: string }>
+   verifyOTP: (email: string, otp: string) => Promise<{ success: boolean; message: string }>
++  updateProfile: (data: Partial<User>) => Promise<{ success: boolean; message: string }>
+   logout: () => void
+   isLoading: boolean
+ }
+@@ -152,6 +153,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
+     return { success: false, message: "Invalid OTP. Please try again." }
+   }
+ 
++  const updateProfile = async (data: Partial<User>) => {
++    setIsLoading(true)
++
++    try {
++      // Simulate API call delay
++      await new Promise((resolve) => setTimeout(resolve, 1000))
++
++      if (user) {
++        const updatedUser = { ...user, ...data }
++        setUser(updatedUser)
++        localStorage.setItem("quickcourt_user", JSON.stringify(updatedUser))
++        setIsLoading(false)
++        return { success: true, message: "Profile updated successfully!" }
++      }
++
++      setIsLoading(false)
++      return { success: false, message: "No user logged in" }
++    } catch (error) {
++      setIsLoading(false)
++      return { success: false, message: "Failed to update profile" }
++    }
++  }
++
+   const logout = () => {
+     setUser(null)
+     localStorage.removeItem("quickcourt_user")
+@@ -165,6 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
+         login,
+         signup,
+         verifyOTP,
++        updateProfile,
+         logout,
+         isLoading,
+       }}
+diff --git a/lib/image-utils.ts b/lib/image-utils.ts
+new file mode 100644
+index 0000000..b652fc3
+--- /dev/null
++++ b/lib/image-utils.ts
+@@ -0,0 +1,101 @@
++/**
++ * Utility functions for image processing and validation
++ */
++
++export interface ImageResizeOptions {
++  maxWidth?: number
++  maxHeight?: number
++  quality?: number
++}
++
++/**
++ * Resize and compress an image file
++ */
++export function resizeImage(
++  file: File, 
++  options: ImageResizeOptions = {}
++): Promise<Blob> {
++  const { maxWidth = 400, maxHeight = 400, quality = 0.8 } = options
++
++  return new Promise((resolve, reject) => {
++    const canvas = document.createElement('canvas')
++    const ctx = canvas.getContext('2d')
++    const img = new Image()
++
++    img.onload = () => {
++      // Calculate new dimensions
++      let { width, height } = img
++      
++      if (width > height) {
++        if (width > maxWidth) {
++          height = (height * maxWidth) / width
++          width = maxWidth
++        }
++      } else {
++        if (height > maxHeight) {
++          width = (width * maxHeight) / height
++          height = maxHeight
++        }
++      }
++
++      // Set canvas dimensions
++      canvas.width = width
++      canvas.height = height
++
++      // Draw and compress
++      ctx?.drawImage(img, 0, 0, width, height)
++      
++      canvas.toBlob(
++        (blob) => {
++          if (blob) {
++            resolve(blob)
++          } else {
++            reject(new Error('Canvas to blob conversion failed'))
++          }
++        },
++        'image/jpeg',
++        quality
++      )
++    }
++
++    img.onerror = () => reject(new Error('Image load failed'))
++    img.src = URL.createObjectURL(file)
++  })
++}
++
++/**
++ * Validate image file
++ */
++export function validateImageFile(file: File): { valid: boolean; error?: string } {
++  // Check file type
++  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
++  if (!allowedTypes.includes(file.type)) {
++    return {
++      valid: false,
++      error: 'Invalid file type. Only JPEG, PNG, and WebP images are allowed.'
++    }
++  }
++
++  // Check file size (1MB limit)
++  const maxSize = 1 * 1024 * 1024 // 1MB
++  if (file.size > maxSize) {
++    return {
++      valid: false,
++      error: 'File too large. Maximum size is 1MB.'
++    }
++  }
++
++  return { valid: true }
++}
++
++/**
++ * Generate a preview URL for a file
++ */
++export function createImagePreview(file: File): Promise<string> {
++  return new Promise((resolve, reject) => {
++    const reader = new FileReader()
++    reader.onload = (e) => resolve(e.target?.result as string)
++    reader.onerror = () => reject(new Error('Failed to read file'))
++    reader.readAsDataURL(file)
++  })
++}
+diff --git a/public/uploads/profiles/4-1754939074267.jpeg b/public/uploads/profiles/4-1754939074267.jpeg
+new file mode 100644
+index 0000000000000000000000000000000000000000..a6747e6d3fc00d2340d3f492e9b5531ce97ce85c
+GIT binary patch
+literal 6709
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/public/uploads/profiles/4-1754939228343.jpeg b/public/uploads/profiles/4-1754939228343.jpeg
+new file mode 100644
+index 0000000000000000000000000000000000000000..dbb2819b2b93a78138117c4fd7b4b481b4ffb424
+GIT binary patch
+literal 6347
+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
+PGI1UfDGVLQ-yr`75XxrM
+
+literal 0
+HcmV?d00001
+
+diff --git a/public/uploads/profiles/4-1754939446924.jpeg b/public/uploads/profiles/4-1754939446924.jpeg
+new file mode 100644
+index 0000000000000000000000000000000000000000..dbb2819b2b93a78138117c4fd7b4b481b4ffb424
+GIT binary patch
+literal 6347
+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
+PGI1UfDGVLQ-yr`75XxrM
+
+literal 0
+HcmV?d00001
+
+diff --git a/public/uploads/profiles/README.md b/public/uploads/profiles/README.md
+new file mode 100644
+index 0000000..11c4a22
+--- /dev/null
++++ b/public/uploads/profiles/README.md
+@@ -0,0 +1,12 @@
++# Profile Photos Directory
++
++This directory contains uploaded user profile photos.
++
++File naming convention: `{userId}-{timestamp}.{extension}`
++
++Supported formats:
++- JPEG (.jpg, .jpeg)
++- PNG (.png)
++- WebP (.webp)
++
++Maximum file size: 1MB
+-- 
+2.39.5 (Apple Git-154)
+

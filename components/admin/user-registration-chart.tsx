@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Legend } from "recharts"
 import type { AdminStats } from "@/lib/admin-data"
 
 interface UserRegistrationChartProps {
@@ -12,11 +12,11 @@ interface UserRegistrationChartProps {
 const chartConfig = {
   users: {
     label: "Users",
-    color: "hsl(var(--chart-1))",
+    color: "#3B82F6", // Blue
   },
   owners: {
     label: "Facility Owners",
-    color: "hsl(var(--chart-2))",
+    color: "#EF4444", // Red
   },
 }
 
@@ -31,11 +31,28 @@ export function UserRegistrationChart({ stats }: UserRegistrationChartProps) {
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={stats.userRegistrationTrends}>
-              <XAxis dataKey="date" />
-              <YAxis />
+              <XAxis dataKey="date" stroke="#6B7280" />
+              <YAxis stroke="#6B7280" />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Line type="monotone" dataKey="users" stroke="var(--color-users)" strokeWidth={2} />
-              <Line type="monotone" dataKey="owners" stroke="var(--color-owners)" strokeWidth={2} />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="users" 
+                name="Users"
+                stroke="#3B82F6" 
+                strokeWidth={3}
+                dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: "#3B82F6" }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="owners" 
+                name="Facility Owners"
+                stroke="#EF4444" 
+                strokeWidth={3}
+                dot={{ fill: "#EF4444", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: "#EF4444" }}
+              />
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>

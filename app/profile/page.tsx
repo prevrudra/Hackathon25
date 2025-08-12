@@ -189,7 +189,10 @@ export default function ProfilePage() {
     // Immediately update the user context so the avatar shows up right away
     if (user) {
       try {
-        await updateProfile({ avatar: photoUrl })
+        await updateProfile({ 
+          fullName: user.fullName,
+          avatar: photoUrl 
+        })
       } catch (error) {
         console.error("Failed to update avatar immediately:", error)
       }

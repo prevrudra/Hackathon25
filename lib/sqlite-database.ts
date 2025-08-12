@@ -81,6 +81,8 @@ export function initializeDatabase() {
       longitude REAL,
       amenities TEXT, -- JSON string
       images TEXT, -- JSON string
+      status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'suspended')),
+      approval_notes TEXT,
       is_active BOOLEAN DEFAULT TRUE,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -213,8 +215,8 @@ export function seedDatabase() {
 
   // Insert venues
   const insertVenue = database.prepare(`
-    INSERT INTO venues (name, description, address, city, state, pincode, phone, email, owner_id, latitude, longitude, amenities, images, is_active)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO venues (name, description, address, city, state, pincode, phone, email, owner_id, latitude, longitude, amenities, images, status, is_active)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
   insertVenue.run(
@@ -231,6 +233,7 @@ export function seedDatabase() {
     72.8777,
     JSON.stringify(['Parking', 'Changing Rooms', 'Cafeteria', 'Air Conditioning']),
     JSON.stringify(['/images/venue1.jpg', '/images/venue1-2.jpg']),
+    'approved',
     1
   )
 
@@ -248,6 +251,44 @@ export function seedDatabase() {
     72.8295,
     JSON.stringify(['Parking', 'Changing Rooms', 'Pro Shop', 'Fitness Center']),
     JSON.stringify(['/images/venue2.jpg', '/images/venue2-2.jpg']),
+    'approved',
+    1
+  )
+
+  // Add some pending venues for admin review
+  insertVenue.run(
+    'Victory Sports Club',
+    'Modern sports facility with badminton and tennis courts',
+    '789 Victory Lane, Pune',
+    'Pune',
+    'Maharashtra',
+    '411001',
+    '+91-20-12345678',
+    'info@victorysports.com',
+    1,
+    18.5204,
+    73.8567,
+    JSON.stringify(['Parking', 'Changing Rooms', 'Equipment Rental']),
+    JSON.stringify(['/images/venue3.jpg']),
+    'pending',
+    1
+  )
+
+  insertVenue.run(
+    'Champion Arena',
+    'Basketball and football facility with professional setup',
+    '321 Champion Street, Delhi',
+    'Delhi',
+    'Delhi',
+    '110001',
+    '+91-11-87654321',
+    'contact@champion.com',
+    2,
+    28.7041,
+    77.1025,
+    JSON.stringify(['Parking', 'Cafeteria', 'First Aid']),
+    JSON.stringify(['/images/venue4.jpg']),
+    'pending',
     1
   )
 
