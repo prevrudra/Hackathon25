@@ -6,8 +6,8 @@ const gmailTransporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: process.env.SMTP_USER || 'cronixglobal@gmail.com',
-    pass: process.env.SMTP_PASS || 'Hanuop#143'
+    user: process.env.GMAIL_USER || 'cronixglobal@gmail.com',
+    pass: process.env.GMAIL_PASS || 'yuxccskftnmpqtub'
   },
   tls: {
     rejectUnauthorized: false
@@ -34,6 +34,49 @@ export const emailTransporter = gmailTransporter
 // Generate a 6-digit OTP
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+// Send password reset email
+export async function sendPasswordResetEmail(email: string, userName: string, token: string): Promise<boolean> {
+  const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  const mailOptions = {
+    from: 'QuickCourt <cronixglobal@gmail.com>',
+    to: email,
+    subject: '🔑 QuickCourt Password Reset Request',
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f8fafc; border-radius: 12px;">
+        <h1 style="color: #2563eb; font-size: 28px; font-weight: bold; text-align: center;">🏸 QUICKCOURT</h1>
+        <h2 style="color: #1e293b; font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 16px;">Password Reset Request</h2>
+        <p style="color: #64748b; font-size: 16px; text-align: center;">Hi ${userName},</p>
+        <p style="color: #64748b; font-size: 16px; text-align: center;">We received a request to reset your password. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${resetUrl}" style="display: inline-block; background: #2563eb; color: #fff; font-weight: bold; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 18px;">Reset Password</a>
+        </div>
+        <p style="color: #92400e; background: #fef3c7; border: 1px solid #fbbf24; padding: 12px; border-radius: 6px; text-align: center; font-size: 14px;">This link will expire in 30 minutes. If you did not request a password reset, please ignore this email.</p>
+        <div style="text-align: center; color: #94a3b8; font-size: 14px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0;">This email was sent by QuickCourt</div>
+      </div>
+    `,
+    text: `Hi ${userName},\n\nWe received a request to reset your password. Use the link below to set a new password:\n${resetUrl}\n\nThis link will expire in 30 minutes. If you did not request a password reset, please ignore this email.\n\nQuickCourt Team`
+  };
+  
+  console.log('Attempting to send password reset email to:', email);
+  
+  try {
+    await gmailTransporter.sendMail(mailOptions);
+    console.log('Password reset email sent via Gmail to:', email);
+    return true;
+  } catch (gmailError) {
+    console.log('Gmail failed, trying Mailtrap fallback:', gmailError);
+    try {
+      const mailtrapOptions = { ...mailOptions, from: 'QuickCourt <noreply@quickcourt.com>' };
+      await mailtrapTransporter.sendMail(mailtrapOptions);
+      console.log('Password reset email sent via Mailtrap to:', email);
+      return true;
+    } catch (mailtrapError) {
+      console.error('Both Gmail and Mailtrap failed:', mailtrapError);
+      return false;
+    }
+  }
 }
 
 // Send OTP email with fallback system
@@ -65,49 +108,52 @@ export async function sendOTPEmail(email: string, otp: string, userName?: string
             padding: 32px; 
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           }
-          .logo { 
+          .header { 
             text-align: center; 
             margin-bottom: 32px; 
           }
-          .logo h1 { 
-            color: #2563eb; 
+          .logo { 
             font-size: 28px; 
-            margin: 0; 
-            font-weight: bold;
+            font-weight: bold; 
+            color: #2563eb; 
+            margin-bottom: 8px;
           }
           .title { 
-            color: #1e293b; 
-            font-size: 24px; 
+            font-size: 22px; 
             font-weight: bold; 
-            text-align: center; 
+            color: #1e293b; 
             margin-bottom: 16px;
           }
-          .subtitle { 
-            color: #10b981; 
+          .otp-code { 
+            background: #f1f5f9; 
+            border: 2px solid #2563eb; 
+            border-radius: 8px; 
+            padding: 20px; 
             text-align: center; 
-            margin-bottom: 32px; 
-            font-size: 16px;
+            margin: 24px 0; 
           }
-          .otp-container { 
-            text-align: center; 
-            margin: 32px 0; 
-          }
-          .otp { 
+          .otp-number { 
             font-size: 36px; 
             font-weight: bold; 
-            letter-spacing: 8px; 
             color: #2563eb; 
-            background: #f1f5f9; 
-            padding: 16px 24px; 
-            border-radius: 8px; 
-            display: inline-block;
-            border: 2px dashed #2563eb;
+            letter-spacing: 8px; 
+            font-family: 'Courier New', monospace;
           }
           .message { 
-            text-align: center; 
             color: #64748b; 
-            margin: 24px 0; 
-            font-size: 16px;
+            font-size: 16px; 
+            text-align: center; 
+            margin: 16px 0; 
+          }
+          .warning { 
+            background: #fef3c7; 
+            border: 1px solid #fbbf24; 
+            border-radius: 6px; 
+            padding: 12px; 
+            color: #92400e; 
+            font-size: 14px; 
+            text-align: center; 
+            margin: 20px 0; 
           }
           .footer { 
             text-align: center; 
@@ -115,107 +161,55 @@ export async function sendOTPEmail(email: string, otp: string, userName?: string
             font-size: 14px; 
             margin-top: 32px; 
             padding-top: 24px; 
-            border-top: 1px solid #e2e8f0;
-          }
-          .warning { 
-            background: #fef3c7; 
-            border: 1px solid #fbbf24; 
-            color: #92400e; 
-            padding: 12px; 
-            border-radius: 6px; 
-            text-align: center; 
-            margin: 24px 0; 
-            font-size: 14px;
+            border-top: 1px solid #e2e8f0; 
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <div class="logo">
-            <h1>🏸 QUICKCOURT</h1>
+          <div class="header">
+            <div class="logo">🏸 QUICKCOURT</div>
+            <div class="title">Email Verification</div>
           </div>
           
-          <div class="title">🔐 VERIFY YOUR EMAIL</div>
+          <p class="message">Hi ${userName || 'there'}! 👋</p>
+          <p class="message">Please use the verification code below to complete your registration:</p>
           
-          <div class="subtitle">
-            We've sent a code to your email: <strong>${email}</strong>
+          <div class="otp-code">
+            <div class="otp-number">${otp}</div>
           </div>
           
-          <div class="otp-container">
-            <div class="otp">${otp}</div>
-          </div>
-          
-          <div class="message">
-            ${userName ? `Hi ${userName},` : 'Hello!'}<br>
-            Enter this 6-digit code in the QuickCourt app to verify your email address.
-          </div>
+          <p class="message">Enter this code in the verification screen to continue.</p>
           
           <div class="warning">
-            ⚠️ This code will expire in 10 minutes. Don't share it with anyone.
+            ⚠️ This code will expire in 10 minutes. If you didn't request this verification, please ignore this email.
           </div>
           
           <div class="footer">
-            <p>This email was sent by QuickCourt</p>
-            <p>If you didn't request this code, please ignore this email.</p>
+            This email was sent by QuickCourt<br>
+            Your trusted sports booking platform
           </div>
         </div>
       </body>
       </html>
     `,
-    text: `
-      QuickCourt - Email Verification
-      
-      Your verification code is: ${otp}
-      
-      ${userName ? `Hi ${userName},` : 'Hello!'}
-      Enter this 6-digit code in the QuickCourt app to verify your email address.
-      
-      This code will expire in 10 minutes. Don't share it with anyone.
-      
-      If you didn't request this code, please ignore this email.
-    `
-  }
+    text: `Hi ${userName || 'there'}!\n\nYour QuickCourt verification code is: ${otp}\n\nThis code will expire in 10 minutes. If you didn't request this verification, please ignore this email.\n\nQuickCourt Team`
+  };
 
-  // Try Gmail first
   try {
-    await gmailTransporter.sendMail(mailOptions)
-    console.log('OTP email sent successfully via Gmail to:', email)
-    return true
+    await gmailTransporter.sendMail(mailOptions);
+    console.log('OTP email sent via Gmail to:', email);
+    return true;
   } catch (gmailError) {
-    console.log('Gmail failed, trying Mailtrap fallback:', gmailError)
-    
-    // Fallback to Mailtrap
+    console.log('Gmail failed, trying Mailtrap fallback:', gmailError);
     try {
-      const mailtrapOptions = {
-        ...mailOptions,
-        from: '"QuickCourt" <noreply@quickcourt.com>' // Use generic sender for Mailtrap
-      }
-      await mailtrapTransporter.sendMail(mailtrapOptions)
-      console.log('OTP email sent successfully via Mailtrap to:', email)
-      return true
+      const mailtrapOptions = { ...mailOptions, from: '"QuickCourt" <noreply@quickcourt.com>' };
+      await mailtrapTransporter.sendMail(mailtrapOptions);
+      console.log('OTP email sent via Mailtrap to:', email);
+      return true;
     } catch (mailtrapError) {
-      console.error('Both Gmail and Mailtrap failed:', mailtrapError)
-      return false
-    }
-  }
-}
-
-// Verify email transporter configuration
-export async function verifyEmailConfig(): Promise<boolean> {
-  try {
-    // Try Gmail first
-    await gmailTransporter.verify()
-    console.log('Gmail transporter is ready')
-    return true
-  } catch (gmailError) {
-    console.log('Gmail verification failed, checking Mailtrap:', gmailError)
-    try {
-      await mailtrapTransporter.verify()
-      console.log('Mailtrap transporter is ready')
-      return true
-    } catch (mailtrapError) {
-      console.error('Both email transporters failed:', mailtrapError)
-      return false
+      console.error('Both Gmail and Mailtrap failed:', mailtrapError);
+      return false;
     }
   }
 }

@@ -32,10 +32,10 @@ export async function getAdminStats(): Promise<AdminStats> {
     const pendingApprovals = 0
 
     // Get total revenue from completed bookings
-    const revenueResult = executeQuerySingle(
+    const revenueResult = await executeQuerySingle(
       "SELECT SUM(total_amount) as total FROM bookings WHERE payment_status = 'paid'"
     )
-    const totalRevenue = Math.round((revenueResult?.total || 0) * 100) // Convert to paisa for display
+    const totalRevenue = Math.round(revenueResult?.total || 0) // No multiplication, keep as rupees
 
     // Get user registration trends (last 7 days)
     const userTrends = executeQuery(`
@@ -205,7 +205,7 @@ export async function getPendingFacilities(): Promise<PendingFacility[]> {
 
 export async function getPlatformUsers(): Promise<PlatformUser[]> {
   try {
-    const users = executeQuery(`
+    const users = await executeQuery(`
       SELECT 
         u.*,
         COALESCE(b.booking_count, 0) as total_bookings,
@@ -225,7 +225,7 @@ export async function getPlatformUsers(): Promise<PlatformUser[]> {
       LIMIT 50
     `)
 
-    return users.map(user => ({
+    return users.map((user: any) => ({
       id: user.id.toString(),
       fullName: user.full_name,
       email: user.email,
@@ -234,7 +234,7 @@ export async function getPlatformUsers(): Promise<PlatformUser[]> {
       isBanned: !Boolean(user.is_active),
       joinedAt: user.created_at,
       totalBookings: user.total_bookings,
-      totalSpent: user.total_spent || 0, // Keep in original currency units
+      totalSpent: user.total_spent || 0,
       lastActive: user.updated_at
     }))
   } catch (error) {

@@ -49,39 +49,68 @@ export function SignupFormSimple() {
       return
     }
 
-    // Convert profile picture to base64 if exists
-    let avatarData = ""
-    if (formData.profilePicture) {
-      const reader = new FileReader()
-      avatarData = await new Promise((resolve) => {
-        reader.onload = (e) => resolve(e.target?.result as string)
-        reader.readAsDataURL(formData.profilePicture!)
-      })
+    try {
+      // Convert profile picture to base64 if exists
+      let avatarData = ""
+      if (formData.profilePicture) {
+        const reader = new FileReader()
+        avatarData = await new Promise((resolve) => {
+          reader.onload = (e) => resolve(e.target?.result as string)
+          reader.readAsDataURL(formData.profilePicture!)
+        })
+      }
+
+      // First, create the user account
+      console.log('Creating user account...');
+      const signupResponse = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          role: formData.role,
+          avatar: avatarData
+        })
+      });
+
+      const signupResult = await signupResponse.json();
+      console.log('Signup result:', signupResult);
+
+      if (!signupResult.success) {
+        setError(signupResult.message);
+        return;
+      }
+
+      // Generate and send OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log('Sending OTP...', otp);
+      
+      const otpResponse = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: formData.email, 
+          otp,
+          userName: formData.fullName 
+        }),
+      });
+
+      const otpResult = await otpResponse.json();
+      console.log('OTP result:', otpResult);
+
+      // Store OTP for verification (in production, this would be in database with expiration)
+      localStorage.setItem("quickcourt_signup_otp", otp);
+
+      setSuccess("Account created! Please check your email for verification code.");
+      setTimeout(() => {
+        router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
+      }, 2000);
+
+    } catch (error) {
+      console.error('Signup error:', error);
+      setError("Failed to create account. Please try again.");
     }
-
-    // Store pending user data in localStorage
-    const pendingUser = {
-      email: formData.email,
-      password: formData.password,
-      fullName: formData.fullName,
-      role: formData.role as UserRole,
-      avatar: avatarData,
-    };
-    localStorage.setItem("quickcourt_pending_user", JSON.stringify(pendingUser));
-
-    // Send OTP email
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    await fetch("/api/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: formData.email, otp }),
-    });
-    localStorage.setItem("quickcourt_signup_otp", otp);
-
-    setSuccess("OTP sent! Please verify your email.");
-    setTimeout(() => {
-      router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`)
-    }, 2000);
   }
 
   const handleInputChange = (field: string, value: string) => {

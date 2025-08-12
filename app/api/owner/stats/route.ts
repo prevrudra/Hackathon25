@@ -13,9 +13,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const stats = await OwnerDatabaseService.getOwnerStats(parseInt(ownerId))
-    
-    return NextResponse.json(stats)
+  const stats = await OwnerDatabaseService.getOwnerStats(parseInt(ownerId))
+  console.log('DEBUG: Owner Stats API called for ownerId:', ownerId)
+  console.log('DEBUG: Stats returned:', stats)
+  return NextResponse.json(stats)
   } catch (error) {
     console.error('Error fetching owner stats:', error)
     return NextResponse.json(

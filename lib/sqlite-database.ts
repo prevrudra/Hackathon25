@@ -1,3 +1,4 @@
+    // ...existing code...
 import Database from 'better-sqlite3'
 import path from 'path'
 
@@ -156,6 +157,17 @@ export function initializeDatabase() {
       price_override REAL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (court_id) REFERENCES courts(id)
+    );
+
+    -- Password reset tokens table
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      token TEXT NOT NULL UNIQUE,
+      expires_at DATETIME NOT NULL,
+      used BOOLEAN DEFAULT FALSE,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     -- Create indexes

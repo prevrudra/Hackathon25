@@ -16,11 +16,21 @@ export default function OwnerDashboardPage() {
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
   const ownerId = useCurrentOwnerId()
-  
-  // Fetch real data from database
   const { stats, loading: statsLoading, error: statsError } = useOwnerStats(ownerId)
   const { trends, loading: trendsLoading } = useBookingTrends(ownerId, 7)
   const { peakHours, loading: peakHoursLoading } = usePeakHours(ownerId)
+  const dashboardStats = stats || mockOwnerStats
+  const chartTrends = trends.length > 0 ? trends : mockOwnerStats.bookingTrends
+  const chartPeakHours = peakHours.length > 0 ? peakHours : mockOwnerStats.peakHours
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      console.log("DEBUG: OwnerDashboardPage ownerId:", ownerId)
+      console.log("DEBUG: dashboardStats:", dashboardStats)
+      console.log("DEBUG: chartTrends:", chartTrends)
+      console.log("DEBUG: chartPeakHours:", chartPeakHours)
+    }
+  }, [ownerId, dashboardStats, chartTrends, chartPeakHours])
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "facility_owner")) {
@@ -50,11 +60,6 @@ export default function OwnerDashboardPage() {
     logout()
     router.push("/")
   }
-
-  // Use real data if available, fallback to mock data
-  const dashboardStats = stats || mockOwnerStats
-  const chartTrends = trends.length > 0 ? trends : mockOwnerStats.bookingTrends
-  const chartPeakHours = peakHours.length > 0 ? peakHours : mockOwnerStats.peakHours
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -121,15 +126,19 @@ export default function OwnerDashboardPage() {
           <div className="grid lg:grid-cols-2 gap-6">
             <BookingTrendsChart 
               stats={{
-                ...mockOwnerStats,
-                bookingTrends: chartTrends
+                ...dashboardStats,
+                bookingTrends: chartTrends,
+                peakHours: mockOwnerStats.peakHours,
+                recentBookings: mockOwnerStats.recentBookings
               }} 
               loading={trendsLoading}
             />
             <PeakHoursChart 
               stats={{
-                ...mockOwnerStats,
-                peakHours: chartPeakHours
+                ...dashboardStats,
+                peakHours: chartPeakHours,
+                bookingTrends: mockOwnerStats.bookingTrends,
+                recentBookings: mockOwnerStats.recentBookings
               }} 
               loading={peakHoursLoading}
             />

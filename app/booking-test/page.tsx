@@ -1,12 +1,26 @@
 "use client"
 
 import { useState } from "react"
+type Booking = { start_time: string; end_time: string; [key: string]: any }
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function BookingTestPage() {
   const [status, setStatus] = useState("")
   const [testBookingId, setTestBookingId] = useState("")
+  const [userBookings, setUserBookings] = useState<Booking[]>([])
+  const [selectedDate, setSelectedDate] = useState("2025-08-15")
+  const [courtId, setCourtId] = useState(1)
+  // Simulate current user (replace with useAuth() in real app)
+  const currentUserId = 1
+
+  // Fetch user's bookings for the selected date/court
+  useEffect(() => {
+    fetch(`/api/bookings?userId=${currentUserId}&courtId=${courtId}&date=${selectedDate}`)
+      .then(res => res.json())
+      .then(data => setUserBookings(data))
+  }, [currentUserId, courtId, selectedDate])
 
   const testCreateBooking = async () => {
     setStatus("Testing booking creation...")
@@ -119,6 +133,31 @@ export default function BookingTestPage() {
 
   return (
     <div className="container mx-auto p-8">
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>🕒 Bookable Time Slots (Demo)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {["14:00", "15:00", "16:00", "17:00"].map((start, idx) => {
+              const end = `${parseInt(start) + 1}:00`
+              // Disable slot if booked by any user
+              const isBooked = userBookings.some(
+                b => b.start_time === start && b.end_time === end
+              )
+              return (
+                <Button
+                  key={start}
+                  disabled={isBooked}
+                  onClick={() => alert(`Book slot ${start} - ${end}`)}
+                >
+                  {start} - {end} {isBooked ? "(Already booked)" : ""}
+                </Button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>🧪 Booking API Test</CardTitle>

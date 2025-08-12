@@ -20,17 +20,66 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
+      console.log("=== LOGIN DEBUG START ===")
       console.log("Attempting login with:", { email, password })
+      console.log("Email length:", email.length)
+      console.log("Password length:", password.length)
+      console.log("Email chars:", JSON.stringify(email))
+      console.log("Password chars:", JSON.stringify(password))
       
+      // Test direct API call first
+      console.log("Testing direct API call...")
+      const directResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const directData = await directResponse.json()
+      console.log("Direct API response:", directData)
+      console.log("Direct API response success:", directData.success)
+      console.log("Direct API response message:", directData.message)
+      console.log("Direct API response user:", directData.user)
+      
+      // Now test through auth context
+      console.log("Testing through auth context...")
       const result = await login(email, password)
+      console.log("Auth context result:", result)
+      console.log("Auth context result success:", result.success)
+      console.log("Auth context result message:", result.message)
+      
+      // TEMPORARY FIX: If auth context fails but direct API works, bypass auth context
+      if (!result.success && directData.success) {
+        console.log("BYPASSING AUTH CONTEXT - Direct API worked, setting user manually")
+        
+        // Manually set the user in localStorage (temporary fix)
+        const userData = {
+          id: directData.user.id,
+          email: directData.user.email,
+          fullName: directData.user.fullName,
+          role: directData.user.role,
+          isVerified: directData.user.isVerified,
+          avatar: directData.user.avatar
+        }
+        localStorage.setItem("quickcourt_user", JSON.stringify(userData))
+        
+        console.log("Login successful via bypass, user data stored:", userData)
+        
+        // Force a hard redirect to dashboard which will reload the auth context
+        console.log("Forcing redirect to dashboard...")
+        window.location.href = "/dashboard"
+        return
+      }
       
       if (result.success) {
         console.log("Login successful, redirecting...")
         router.push("/dashboard")
       } else {
         console.log("Login failed:", result.message)
-        setError(result.message || "Login failed. Please try again.")
+        const errorMsg = result.message || "Login failed. Please try again."
+        console.log("Setting error message:", errorMsg)
+        setError(errorMsg)
       }
+      console.log("=== LOGIN DEBUG END ===")
     } catch (err) {
       console.error("Login error:", err)
       setError("An error occurred. Please try again.")

@@ -18,7 +18,9 @@ import { format, parseISO } from "date-fns"
 export default function AdminFacilitiesPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
-  const [facilities, setFacilities] = useState<PendingFacility[]>([])
+  const [pendingFacilities, setPendingFacilities] = useState<PendingFacility[]>([])
+  const [approvedFacilities, setApprovedFacilities] = useState<PendingFacility[]>([])
+  const [rejectedFacilities, setRejectedFacilities] = useState<PendingFacility[]>([])
   const [selectedFacility, setSelectedFacility] = useState<PendingFacility | null>(null)
   const [reviewComment, setReviewComment] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -31,24 +33,30 @@ export default function AdminFacilitiesPage() {
   }, [user, isLoading, router])
 
   useEffect(() => {
-    const fetchPendingFacilities = async () => {
+    const fetchFacilities = async () => {
       try {
-        const response = await fetch('/api/admin/facilities/pending')
-        if (response.ok) {
-          const data = await response.json()
-          setFacilities(data)
-        } else {
-          console.error('Failed to fetch pending facilities')
+        const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+          fetch('/api/admin/facilities?status=pending'),
+          fetch('/api/admin/facilities?status=approved'),
+          fetch('/api/admin/facilities?status=rejected'),
+        ])
+        if (pendingRes.ok) {
+          setPendingFacilities(await pendingRes.json())
+        }
+        if (approvedRes.ok) {
+          setApprovedFacilities(await approvedRes.json())
+        }
+        if (rejectedRes.ok) {
+          setRejectedFacilities(await rejectedRes.json())
         }
       } catch (error) {
-        console.error('Error fetching pending facilities:', error)
+        console.error('Error fetching facilities:', error)
       } finally {
         setFacilitiesLoading(false)
       }
     }
-
     if (user && user.role === "admin") {
-      fetchPendingFacilities()
+      fetchFacilities()
     }
   }, [user])
 
@@ -81,7 +89,7 @@ export default function AdminFacilitiesPage() {
 
       if (response.ok) {
         // Remove from pending list
-        setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
+  setPendingFacilities((prev: PendingFacility[]) => prev.filter((f) => f.id !== facilityId))
         setSelectedFacility(null)
         setReviewComment("")
       } else {
@@ -119,7 +127,7 @@ export default function AdminFacilitiesPage() {
 
       if (response.ok) {
         // Remove from pending list
-        setFacilities((prev) => prev.filter((f) => f.id !== facilityId))
+  setPendingFacilities((prev: PendingFacility[]) => prev.filter((f) => f.id !== facilityId))
         setSelectedFacility(null)
         setReviewComment("")
       } else {
@@ -134,9 +142,7 @@ export default function AdminFacilitiesPage() {
     }
   }
 
-  const pendingFacilities = facilities
-  const approvedFacilities: PendingFacility[] = [] // Would come from API
-  const rejectedFacilities: PendingFacility[] = [] // Would come from API
+  // pendingFacilities, approvedFacilities, rejectedFacilities now come from state
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -196,7 +202,7 @@ export default function AdminFacilitiesPage() {
                         <div className="flex justify-between items-start">
                           <div>
                             <CardTitle className="text-lg">{facility.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{facility.location}</p>
+                            <p className="text-sm text-muted-foreground">{facility.location || 'N/A'}</p>
                           </div>
                           <Badge variant="secondary">Pending</Badge>
                         </div>
@@ -205,15 +211,15 @@ export default function AdminFacilitiesPage() {
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Owner:</span>
-                            <span>{facility.ownerName}</span>
+                            <span>{facility.ownerName || 'N/A'}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Courts:</span>
-                            <span>{facility.courts}</span>
+                            <span>{facility.courts ?? 'N/A'}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Submitted:</span>
-                            <span>{format(parseISO(facility.submittedAt), "MMM dd, yyyy")}</span>
+                            <span>{facility.submittedAt ? format(parseISO(facility.submittedAt), "MMM dd, yyyy") : 'N/A'}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -277,7 +283,7 @@ export default function AdminFacilitiesPage() {
 
                           <div>
                             <Label className="text-sm font-medium">Owner Contact</Label>
-                            <p className="text-sm text-muted-foreground mt-1">{selectedFacility.ownerEmail}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{selectedFacility.ownerEmail || 'N/A'}</p>
                           </div>
                         </div>
 
@@ -338,20 +344,96 @@ export default function AdminFacilitiesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="approved">
-            <Alert>
-              <AlertDescription>
-                Approved facilities will be shown here. This would typically load from the database.
-              </AlertDescription>
-            </Alert>
+          <TabsContent value="approved" className="space-y-6">
+            {approvedFacilities.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No approved facilities</h3>
+                  <p className="text-gray-600">No facilities have been approved yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {approvedFacilities.map((facility) => (
+                  <Card key={facility.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{facility.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{facility.location || 'N/A'}</p>
+                        </div>
+                        <Badge variant="secondary">Approved</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Owner:</span>
+                          <span>{facility.ownerName || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Courts:</span>
+                          <span>{facility.courts ?? 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Submitted:</span>
+                          <span>{facility.submittedAt ? format(parseISO(facility.submittedAt), "MMM dd, yyyy") : 'N/A'}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="rejected">
-            <Alert>
-              <AlertDescription>
-                Rejected facilities will be shown here. This would typically load from the database.
-              </AlertDescription>
-            </Alert>
+          <TabsContent value="rejected" className="space-y-6">
+            {rejectedFacilities.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No rejected facilities</h3>
+                  <p className="text-gray-600">No facilities have been rejected yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid lg:grid-cols-2 gap-6">
+                {rejectedFacilities.map((facility) => (
+                  <Card key={facility.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{facility.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{facility.location || 'N/A'}</p>
+                        </div>
+                        <Badge variant="destructive">Rejected</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Owner:</span>
+                          <span>{facility.ownerName || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Courts:</span>
+                          <span>{facility.courts ?? 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Submitted:</span>
+                          <span>{facility.submittedAt ? format(parseISO(facility.submittedAt), "MMM dd, yyyy") : 'N/A'}</span>
+                        </div>
+                        {('rejectionReason' in facility && (facility as any).rejectionReason) && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Reason:</span>
+                            <span>{(facility as any).rejectionReason}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
