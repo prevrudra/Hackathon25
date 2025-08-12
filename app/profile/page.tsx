@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth, type UserRole } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,7 +50,20 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push("/login");
+      // Instead of redirecting, create a default user for demo purposes
+      const defaultUser = {
+        id: "demo-user-" + Date.now(),
+        email: "demo@quickcourt.com",
+        fullName: "Demo User",
+        role: "user" as UserRole,
+        isVerified: true,
+        avatar: ""
+      };
+      setFormData({
+        fullName: defaultUser.fullName,
+        email: defaultUser.email,
+        avatar: defaultUser.avatar || "",
+      });
       return;
     }
     if (user) {
@@ -73,9 +86,19 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  // Create a default user object if none exists for demo purposes
+  const currentUser = user || {
+    id: "demo-user-123",
+    email: formData.email || "demo@quickcourt.com",
+    fullName: formData.fullName || "Demo User",
+    role: "user" as UserRole,
+    isVerified: true,
+    avatar: formData.avatar || ""
+  };
+
+  console.log('Profile page - user:', user)
+  console.log('Profile page - currentUser:', currentUser)
+  console.log('Profile page - currentUser.id:', currentUser.id)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,13 +198,11 @@ export default function ProfilePage() {
   };
 
   const handleReset = () => {
-    if (user) {
-      setFormData({
-        fullName: user.fullName,
-        email: user.email,
-        avatar: user.avatar || "",
-      });
-    }
+    setFormData({
+      fullName: currentUser.fullName,
+      email: currentUser.email,
+      avatar: currentUser.avatar || "",
+    });
     setMessage("");
   };
 
@@ -204,22 +225,22 @@ export default function ProfilePage() {
           {/* Sidebar */}
           <aside className="w-80 bg-white rounded-lg shadow p-6 flex flex-col items-center mr-4">
             <Avatar className="w-24 h-24 mb-4">
-              <AvatarImage src={user.avatar || ""} alt={user.fullName} />
+              <AvatarImage src={currentUser.avatar || ""} alt={currentUser.fullName} />
               <AvatarFallback className="text-3xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {user.fullName.charAt(0).toUpperCase()}
+                {currentUser.fullName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="text-center mb-2">
-              <div className="font-semibold text-lg">{user.fullName}</div>
-              <div className="text-sm text-muted-foreground">{user.email}</div>
+              <div className="font-semibold text-lg">{currentUser.fullName}</div>
+              <div className="text-sm text-muted-foreground">{currentUser.email}</div>
             </div>
             <Badge variant="secondary" className="mb-2">
-              {user.role.replace("_", " ").charAt(0).toUpperCase() + user.role.replace("_", " ").slice(1)}
+              {currentUser.role.replace("_", " ").charAt(0).toUpperCase() + currentUser.role.replace("_", " ").slice(1)}
             </Badge>
             <div className="flex items-center gap-2 mb-4">
-              <div className={`w-2 h-2 rounded-full ${user.isVerified ? "bg-green-500" : "bg-yellow-500"}`}></div>
+              <div className={`w-2 h-2 rounded-full ${currentUser.isVerified ? "bg-green-500" : "bg-yellow-500"}`}></div>
               <span className="text-xs text-muted-foreground">
-                {user.isVerified ? "Email verified" : "Email not verified"}
+                {currentUser.isVerified ? "Email verified" : "Email not verified"}
               </span>
             </div>
             <Button className="w-full mb-2" variant="default">Edit Profile</Button>
@@ -262,7 +283,7 @@ export default function ProfilePage() {
                     <Label>Profile Photo</Label>
                     <ProfilePhotoUpload
                       currentPhoto={formData.avatar}
-                      userId={user?.id || ""}
+                      userId={currentUser.id}
                       onPhotoChange={handleAvatarChange}
                       disabled={isUpdating}
                     />

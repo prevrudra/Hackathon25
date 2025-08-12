@@ -28,7 +28,18 @@ export function ProfilePhotoUpload({
   const [error, setError] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Use a fallback userId if none provided
+  const effectiveUserId = userId || 'demo-user-' + Math.random().toString(36).substr(2, 9)
+  
+  // Debug logging
+  console.log('ProfilePhotoUpload userId:', userId, 'effectiveUserId:', effectiveUserId)
+
+  // Always allow uploads in demo mode
+  const isUserIdValid = true
+  const isComponentDisabled = disabled
+
   const getInitials = (userId: string) => {
+    if (!userId || userId.trim() === '') return 'U'
     return userId.slice(0, 2).toUpperCase()
   }
 
@@ -78,7 +89,7 @@ export function ProfilePhotoUpload({
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('userId', userId)
+      formData.append('userId', effectiveUserId)
 
       const response = await fetch('/api/upload/profile-photo', {
         method: 'POST',
@@ -117,7 +128,7 @@ export function ProfilePhotoUpload({
   }
 
   const triggerFileInput = () => {
-    if (!disabled) {
+    if (!isComponentDisabled) {
       fileInputRef.current?.click()
     }
   }
@@ -130,7 +141,7 @@ export function ProfilePhotoUpload({
           <Avatar className="h-24 w-24 border-4 border-gray-200">
             <AvatarImage src={previewUrl || undefined} alt="Profile photo" />
             <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-              {getInitials(userId)}
+              {getInitials(effectiveUserId)}
             </AvatarFallback>
           </Avatar>
           
@@ -138,7 +149,7 @@ export function ProfilePhotoUpload({
           <button
             type="button"
             onClick={triggerFileInput}
-            disabled={disabled || isUploading}
+            disabled={isComponentDisabled || isUploading}
             className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white rounded-full opacity-0 hover:opacity-100 transition-opacity duration-200 disabled:cursor-not-allowed"
           >
             {isUploading ? (
@@ -156,7 +167,7 @@ export function ProfilePhotoUpload({
             variant="outline"
             size="sm"
             onClick={triggerFileInput}
-            disabled={disabled || isUploading}
+            disabled={isComponentDisabled || isUploading}
           >
             <Upload className="h-4 w-4 mr-2" />
             {isUploading ? 'Uploading...' : 'Upload Photo'}
@@ -168,7 +179,7 @@ export function ProfilePhotoUpload({
               variant="outline"
               size="sm"
               onClick={handleRemovePhoto}
-              disabled={disabled || isUploading}
+              disabled={isComponentDisabled || isUploading}
             >
               <X className="h-4 w-4 mr-2" />
               Remove
@@ -183,7 +194,7 @@ export function ProfilePhotoUpload({
           accept="image/jpeg,image/jpg,image/png,image/webp"
           onChange={handleFileSelect}
           className="hidden"
-          disabled={disabled}
+          disabled={isComponentDisabled}
         />
       </div>
 

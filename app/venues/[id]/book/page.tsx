@@ -196,33 +196,33 @@ export default function BookCourtPage() {
         body: JSON.stringify(bookingData),
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        
         // Handle specific booking conflict scenarios
         if (response.status === 409) {
-          switch (errorData.code) {
+          switch (result.code) {
             case 'USER_ALREADY_BOOKED':
               setError('You have already booked this exact time slot. You can view your existing bookings in "My Bookings".')
               break
             case 'USER_OVERLAP_CONFLICT':
-              setError(errorData.error + ' You can view and manage your bookings in "My Bookings".')
+              setError(result.error + ' You can view and manage your bookings in "My Bookings".')
               break
             case 'SLOT_UNAVAILABLE':
               setError('Sorry, this time slot has been taken by another user. Please select a different time.')
               break
             case 'SLOT_OVERLAP_CONFLICT':
-              setError(errorData.error + ' Please choose a different time.')
+              setError(result.error + ' Please choose a different time.')
               break
             default:
-              setError(errorData.error || 'This time slot is no longer available.')
+              setError(result.error || 'This time slot is no longer available.')
           }
         } else {
-          setError(errorData.error || 'Failed to create booking')
+          setError(result.error || 'Failed to create booking')
         }
+        setIsBooking(false)
+        return
       }
-
-      const result = await response.json()
       const bookingId = result.bookingId
 
       // Also save to localStorage for backward compatibility (fallback for user bookings page)
