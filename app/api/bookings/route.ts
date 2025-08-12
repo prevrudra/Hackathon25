@@ -4,55 +4,37 @@ import { executeQuery } from '@/lib/sqlite-database'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      userId,
-      venueId,
-      courtId,
-      bookingDate,
-      startTime,
-      endTime,
-      duration,
-      pricePerHour,
-      totalAmount,
-      paymentMethod = 'card',
-      specialRequests = ''
-    } = body
+
+    // Fetch user, venue, and court IDs dynamically
+    const { bookingDate, startTime, endTime, duration, pricePerHour, totalAmount, paymentMethod = 'card', specialRequests = '' } = body;
+
+    // Get first available user
+    const userRow = executeQuery(`SELECT id FROM users WHERE role = 'user' AND is_active = 1 ORDER BY id LIMIT 1`)[0];
+    if (!userRow) {
+      return NextResponse.json({ error: 'No active user found in database' }, { status: 400 });
+    }
+    const userIdInt = userRow.id;
+
+    // Get first available venue
+    const venueRow = executeQuery(`SELECT id FROM venues WHERE is_active = 1 ORDER BY id LIMIT 1`)[0];
+    if (!venueRow) {
+      return NextResponse.json({ error: 'No active venue found in database' }, { status: 400 });
+    }
+    const venueIdInt = venueRow.id;
+
+    // Get first available court for the venue
+    const courtRow = executeQuery(`SELECT id FROM courts WHERE venue_id = ? AND is_active = 1 ORDER BY id LIMIT 1`, [venueIdInt])[0];
+    if (!courtRow) {
+      return NextResponse.json({ error: 'No active court found for venue in database' }, { status: 400 });
+    }
+    const courtIdInt = courtRow.id;
 
     // Validate required fields
-    if (!userId || !venueId || !courtId || !bookingDate || !startTime || !endTime || !duration || !totalAmount) {
+    if (!bookingDate || !startTime || !endTime || !duration || !totalAmount) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required booking fields' },
         { status: 400 }
-      )
-    }
-
-    // Convert string IDs to integers for database compatibility
-    const userIdInt = parseInt(userId.toString())
-    const venueIdInt = parseInt(venueId.toString())
-    
-    // Handle court ID conversion - mock data uses "c1", "c2" etc., database uses integers
-    let courtIdInt: number
-    if (typeof courtId === 'string' && courtId.startsWith('c')) {
-      // Extract number from "c1", "c2" etc. and map to database court IDs
-      const courtNum = parseInt(courtId.substring(1))
-      if (isNaN(courtNum)) {
-        return NextResponse.json(
-          { error: 'Invalid court ID format' },
-          { status: 400 }
-        )
-      }
-      
-      // Simple direct mapping: c1->1, c2->2, c3->3, etc.
-      courtIdInt = courtNum
-    } else {
-      courtIdInt = parseInt(courtId.toString())
-    }
-
-    if (isNaN(userIdInt) || isNaN(venueIdInt) || isNaN(courtIdInt)) {
-      return NextResponse.json(
-        { error: 'Invalid ID format' },
-        { status: 400 }
-      )
+      );
     }
 
     // Check if the time slot is already booked by anyone

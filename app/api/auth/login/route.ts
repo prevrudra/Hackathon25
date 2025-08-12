@@ -1,40 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Mock user data for demonstration
-const mockUsers = [
-  {
-    id: "1",
-    email: "owner1@quickcourt.com",
-    fullName: "Rajesh Kumar",
-    role: "facility_owner",
-    isVerified: true,
-    avatar: null
-  },
-  {
-    id: "2",
-    email: "owner2@quickcourt.com", 
-    fullName: "Priya Sharma",
-    role: "facility_owner",
-    isVerified: true,
-    avatar: null
-  },
-  {
-    id: "3",
-    email: "user@quickcourt.com",
-    fullName: "Regular User",
-    role: "user",
-    isVerified: true,
-    avatar: null
-  },
-  {
-    id: "4",
-    email: "admin@quickcourt.com",
-    fullName: "Admin User",
-    role: "admin",
-    isVerified: true,
-    avatar: null
-  },
-]
+import { executeQuerySingle } from '@/lib/sqlite-database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,9 +13,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find user by email
-    const user = mockUsers.find(u => u.email === email)
-    
+    // Find user by email in the database
+    const user = executeQuerySingle(
+      'SELECT id, email, full_name, role, is_verified, avatar, password_hash FROM users WHERE email = ? AND is_active = 1',
+      [email]
+    )
+
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
@@ -58,19 +26,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For demo purposes, accept any password for existing users
-    // In a real app, you would verify the password hash here
-    
+    // For demo: accept any password if user exists
+    // TODO: Replace with real password hash check
+
     return NextResponse.json({
       success: true,
       message: 'Login successful',
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.full_name,
         role: user.role,
-        isVerified: user.isVerified,
-        avatar: user.avatar
+        isVerified: !!user.is_verified,
+        avatar: user.avatar || null
       }
     })
 
