@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
+import { useSecureAuth } from "@/lib/secure-auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { mockOwnerStats } from "@/lib/owner-data"
 import Link from "next/link"
 
 export default function OwnerDashboardPage() {
-  const { user, logout, isLoading } = useAuth()
+  const { user, logout, isLoading } = useSecureAuth()
   const router = useRouter()
   const ownerId = useCurrentOwnerId()
   const { stats, loading: statsLoading, error: statsError } = useOwnerStats(ownerId)

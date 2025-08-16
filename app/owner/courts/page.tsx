@@ -17,7 +17,7 @@ export default function OwnerCourtsPage() {
   const router = useRouter()
   const [selectedFacility, setSelectedFacility] = useState("all")
 
-  const ownerFacilities = mockVenues.filter((v) => v.ownerId === "2")
+  const ownerFacilities = mockVenues.filter((v) => v.ownerId === user?.id?.toString())
   const allCourts = ownerFacilities.flatMap((facility) =>
     facility.courts.map((court) => ({
       ...court,

@@ -2,12 +2,7 @@
 -- This script adds 5 new entries to each major table
 
 -- Add 5 more users (3 facility owners, 2 regular users)
-INSERT INTO users (email, password_hash, full_name, role, phone, is_verified, is_active) VALUES
-('owner21@quickcourt.com', '$2b$10$abcdefghijklmnopqrstuvwxyz123456', 'Arjun Reddy', 'facility_owner', '+91-9876543340', TRUE, TRUE),
-('owner22@quickcourt.com', '$2b$10$abcdefghijklmnopqrstuvwxyz123456', 'Sakshi Agarwal', 'facility_owner', '+91-9876543341', TRUE, TRUE),
-('owner23@quickcourt.com', '$2b$10$abcdefghijklmnopqrstuvwxyz123456', 'Rahul Khanna', 'facility_owner', '+91-9876543342', TRUE, TRUE),
-('user51@quickcourt.com', '$2b$10$abcdefghijklmnopqrstuvwxyz123456', 'Priyanka Joshi', 'user', '+91-8765432151', TRUE, TRUE),
-('user52@quickcourt.com', '$2b$10$abcdefghijklmnopqrstuvwxyz123456', 'Karan Malhotra', 'user', '+91-8765432152', TRUE, TRUE);
+-- Removed hardcoded quickcourt.com users
 
 -- Add 5 more venues
 INSERT INTO venues (owner_id, name, description, address, city, state, postal_code, phone, email, sports_supported, amenities, rating, total_reviews, status) VALUES

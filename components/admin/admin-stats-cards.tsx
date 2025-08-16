@@ -22,7 +22,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">+12% from last month</p>
+          {/* Removed monthly change */}
         </CardContent>
       </Card>
 
@@ -40,7 +40,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalFacilityOwners}</div>
-          <p className="text-xs text-muted-foreground">+8% from last month</p>
+          {/* Removed monthly change */}
         </CardContent>
       </Card>
 
@@ -58,7 +58,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalBookings.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">+15% from last month</p>
+          {/* Removed monthly change */}
         </CardContent>
       </Card>
 
@@ -76,7 +76,7 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">₹{(stats.totalRevenue / 100000).toFixed(1)}L</div>
-          <p className="text-xs text-muted-foreground">+18% from last month</p>
+          {/* Removed monthly change */}
         </CardContent>
       </Card>
     </div>

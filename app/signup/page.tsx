@@ -1,37 +1,23 @@
-import { SignupFormSimple } from "@/components/auth/signup-form-simple"
+'use client'
 
-export default function SignupPage() {
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function SignupRedirectPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // Redirect to secure signup page
+    router.replace('/secure-signup')
+  }, [router])
+
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 items-center justify-center p-12">
-        <div className="text-center text-white max-w-md">
-          <div className="mb-8">
-            <img 
-              src="/placeholder-logo.png" 
-              alt="QuickCourt Logo" 
-              className="w-32 h-32 mx-auto mb-6"
-            />
-          </div>
-          <h1 className="text-4xl font-bold mb-4">
-            Join QuickCourt
-          </h1>
-          <p className="text-xl text-blue-100 mb-8">
-            Create your account and start booking premium sports facilities across India
-          </p>
-          <div className="space-y-2 text-blue-100">
-            <p>✓ Instant booking confirmation</p>
-            <p>✓ Premium facilities nationwide</p>
-            <p>✓ Secure payment processing</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Right side - Signup Form */}
-      <div className="flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="w-full max-w-md">
-          <SignupFormSimple />
-        </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">🔒 Redirecting to Secure Signup</h2>
+        <p className="text-gray-600">You're being redirected to our secure registration system...</p>
+        <p className="text-sm text-green-600 mt-2">✅ Enhanced security with encrypted password storage</p>
       </div>
     </div>
   )

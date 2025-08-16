@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdminStatsCards } from "@/components/admin/admin-stats-cards"
 import { UserRegistrationChart } from "@/components/admin/user-registration-chart"
 import { SportPopularityChart } from "@/components/admin/sport-popularity-chart"
-import { RecentActivity } from "@/components/admin/recent-activity"
+
 import { AdminStats } from "@/lib/admin-data"
 import Link from "next/link"
 
@@ -27,10 +27,16 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchAdminStats = async () => {
       try {
-        const response = await fetch('/api/admin/stats')
+        const response = await fetch('/api/admin/stats', {
+          cache: 'no-store', // Prevent caching
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
         if (response.ok) {
           const stats = await response.json()
           setAdminStats(stats)
+          console.log('📊 Admin stats refreshed:', new Date().toLocaleTimeString())
         } else {
           console.error('Failed to fetch admin stats')
         }
@@ -43,6 +49,11 @@ export default function AdminDashboardPage() {
 
     if (user && user.role === "admin") {
       fetchAdminStats()
+
+      // Auto-refresh every 30 seconds for real-time updates
+      const interval = setInterval(fetchAdminStats, 30000)
+
+      return () => clearInterval(interval)
     }
   }, [user])
 
@@ -76,6 +87,25 @@ export default function AdminDashboardPage() {
     router.push("/")
   }
 
+  const handleRefresh = async () => {
+    setStatsLoading(true)
+    try {
+      const response = await fetch('/api/admin/stats', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      })
+      if (response.ok) {
+        const stats = await response.json()
+        setAdminStats(stats)
+        console.log('🔄 Manual refresh completed:', new Date().toLocaleTimeString())
+      }
+    } catch (error) {
+      console.error('Refresh error:', error)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-indigo-100">
@@ -87,6 +117,14 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Welcome, {user.fullName}</span>
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={statsLoading}
+                className="border-green-200 hover:bg-green-50"
+              >
+                {statsLoading ? '🔄' : '↻'} Refresh
+              </Button>
               <Button variant="outline" onClick={handleLogout} className="border-indigo-200 hover:bg-indigo-50">
                 Logout
               </Button>
@@ -106,13 +144,8 @@ export default function AdminDashboardPage() {
             <SportPopularityChart stats={adminStats} />
           </div>
 
-          {/* Activity and Quick Actions */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <RecentActivity stats={adminStats} />
-            </div>
-
-            {/* Quick Actions */}
+          {/* Quick Actions */}
+          <div className="grid lg:grid-cols-1 gap-6">
             <div className="space-y-4">
               <Card>
                 <CardHeader>

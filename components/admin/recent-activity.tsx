@@ -104,7 +104,7 @@ export function RecentActivity({ stats }: RecentActivityProps) {
                   {getStatusBadge(activity.status)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(parseISO(activity.timestamp), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                 </p>
               </div>
             </div>

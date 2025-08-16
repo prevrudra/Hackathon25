@@ -1,8 +1,4 @@
--- Insert sample admin user
-INSERT INTO users (email, password_hash, full_name, role, is_verified, is_active) VALUES
-('admin@quickcourt.com', '$2b$10$example_hash', 'QuickCourt Admin', 'admin', TRUE, TRUE),
-('owner@example.com', '$2b$10$example_hash', 'John Smith', 'facility_owner', TRUE, TRUE),
-('user@example.com', '$2b$10$example_hash', 'Jane Doe', 'user', TRUE, TRUE);
+-- Removed demo/test users. Only real users should be seeded manually or via signup.
 
 -- Insert sample venues
 INSERT INTO venues (owner_id, name, description, address, city, state, sports_supported, amenities, status) VALUES

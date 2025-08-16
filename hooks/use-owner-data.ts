@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { 
-  OwnerStats, 
-  BookingTrend, 
-  PeakHour, 
-  OwnerBooking, 
-  OwnerVenue, 
-  OwnerCourt 
+import { useSecureAuth } from '@/lib/secure-auth-context'
+import {
+  OwnerStats,
+  BookingTrend,
+  PeakHour,
+  OwnerBooking,
+  OwnerVenue,
+  OwnerCourt
 } from '@/lib/sqlite-owner-database'
 
 export function useOwnerStats(ownerId: number | null) {
@@ -222,24 +223,14 @@ export function useOwnerCourts(ownerId: number | null, venueId?: number) {
   return { courts, loading, error, refetch: fetchCourts }
 }
 
-// Helper hook to get current owner ID from auth context
+// Helper hook to get current owner ID from secure auth context
 export function useCurrentOwnerId(): number | null {
-  const [ownerId, setOwnerId] = useState<number | null>(null)
+  const { user } = useSecureAuth()
 
-  useEffect(() => {
-    // Check localStorage for logged-in user
-    const user = localStorage.getItem('quickcourt_user')
-    if (user) {
-      const userData = JSON.parse(user)
-      if (userData.role === 'facility_owner') {
-        // Map auth user ID to database owner ID
-        // Auth user "1" -> database owner 1
-        // Auth user "2" -> database owner 2
-        const authUserId = parseInt(userData.id)
-        setOwnerId(authUserId)
-      }
-    }
-  }, [])
+  // Return the user ID if they are a facility owner
+  if (user && user.role === 'facility_owner') {
+    return user.id
+  }
 
-  return ownerId
+  return null
 }

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { executeQuery } from '@/lib/sqlite-database';
 
 export async function POST(req: NextRequest) {
-  const { email, otp } = await req.json();
-  if (!email || !otp) {
-    return NextResponse.json({ error: "Missing email or OTP" }, { status: 400 });
+  const { email } = await req.json();
+  if (!email) {
+    return NextResponse.json({ error: "Missing email" }, { status: 400 });
   }
+
+  // Generate random 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  executeQuery(
+    'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?)',
+    [email, otp, expiresAt]
+  );
 
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_PASS;

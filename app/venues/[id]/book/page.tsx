@@ -350,35 +350,35 @@ export default function BookCourtPage() {
                       Checking availability...
                     </div>
                   )}
-                  <Select value={selectedTimeSlot} onValueChange={setSelectedTimeSlot}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select time slot" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((slot) => (
-                        <SelectItem 
-                          key={slot.id} 
-                          value={slot.id}
-                          disabled={!slot.isAvailable}
-                          className={!slot.isAvailable ? "opacity-50 cursor-not-allowed" : ""}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span>{slot.label}</span>
-                            {!slot.isAvailable && slot.conflictInfo && (
-                              <span className="text-xs text-red-500 ml-2">
-                                {slot.conflictInfo.isOwnBooking ? "Your booking" : "Booked"}
-                              </span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                    {timeSlots.map((slot) => (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        disabled={!slot.isAvailable}
+                        onClick={() => {
+                          if (slot.isAvailable) setSelectedTimeSlot(slot.id)
+                        }}
+                        className={`w-full py-2 px-3 rounded border text-sm font-medium transition-all
+                          ${slot.isAvailable && selectedTimeSlot === slot.id ? "bg-primary text-white border-primary" : "bg-white text-gray-900 border-gray-300"}
+                          ${!slot.isAvailable ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "hover:bg-primary/10"}`}
+                        title={!slot.isAvailable && slot.conflictInfo ? (slot.conflictInfo.isOwnBooking ? "Already booked by you" : `Booked by ${slot.conflictInfo.bookedBy}`) : ""}
+                      >
+                        <span>{slot.label}</span>
+                        {!slot.isAvailable && slot.conflictInfo && (
+                          <span className="block text-xs text-red-500 mt-1">
+                            {slot.conflictInfo.isOwnBooking ? "Already booked by you" : `Booked by ${slot.conflictInfo.bookedBy}`}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                   {selectedTimeSlot && !timeSlots.find(s => s.id === selectedTimeSlot)?.isAvailable && (
                     <Alert className="mt-2">
                       <AlertDescription className="text-red-600">
-                        This time slot is not available. Please choose a different time.
+                        {timeSlots.find(s => s.id === selectedTimeSlot)?.conflictInfo?.isOwnBooking
+                          ? "You have already booked this slot. You can view or manage it in 'My Bookings'."
+                          : `This slot is already booked by ${timeSlots.find(s => s.id === selectedTimeSlot)?.conflictInfo?.bookedBy}. Please select a different time.`}
                       </AlertDescription>
                     </Alert>
                   )}
